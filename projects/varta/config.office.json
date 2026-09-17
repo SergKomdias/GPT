@@ -1,0 +1,14 @@
+{
+  "demo": false,
+  "cloud_enabled": false,
+  "model": "gpt-4.1-mini",
+  "cloud_calls_per_hour": 30,
+  "recording": true,
+  "retention_days": 7,
+  "max_recording_gb": 100,
+  "min_free_gb": 5,
+  "cameras": [
+    {"id":"cam1","name":"Офіс · LAN","rtsp_env":"VARTA_CAM1_RTSP","roi":[0,0,1,1],"motion_threshold":0.03,"cooldown_seconds":15},
+    {"id":"cam2","name":"Офіс · радіоміст","rtsp_env":"VARTA_CAM2_RTSP","roi":[0,0,1,1],"motion_threshold":0.03,"cooldown_seconds":15}
+  ]
+}
