@@ -59,6 +59,7 @@ export function Lesson() {
         description={t('Understand it. Try it. Make it yours.', 'Зрозумій. Спробуй. Засвой.')}
       />
       <Notice error>{error}</Notice>
+      <Notice>{state?.providerWarning}</Notice>
       {!state && !error ? <Loading /> : null}
       {state?.completed ? (
         <div className="panel result narrow">

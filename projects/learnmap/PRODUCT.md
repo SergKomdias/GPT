@@ -1,23 +1,17 @@
-# LearnMap 0.1
+# LearnMap 0.2 product
 
-Your personal map of knowledge.
+LearnMap is a free learning prototype for a student and linked parents. It provides a knowledge map, focused practice and transparent evidence, not a school grade or CEFR certificate.
 
-Source of truth: REQUIREMENTS.md. All student and parent features are free. No billing UI, entitlement gates, or subscription checks.
+Onboarding asks “What do you want to learn?” with Mathematics, Physics and English checkboxes. One or more is required. It then offers a short diagnostic only for a selected subject. Profile includes timezone and a daily minute goal. Subjects can be added, paused and resumed from Subjects; Settings links to the editable profile.
 
-## People and journeys
+English-only: Today offers an English starting diagnostic; map/progress/reports contain English only. With evidence, the plan can combine weak English subskills and due reviews within the minute budget. There are no empty Math/Physics cards. Parents can see those subjects as Not selected.
 
-- Student: register → minimal profile → choose subject → adaptive diagnostic → knowledge graph → daily plan → staged lesson → persisted mastery and new plan.
-- Parent: register → redeem a student-generated, single-use invitation → select child → current map, activity, subject/skill trends, weekly report and recommendations.
-- Admin: server-provisioned role only; edit curriculum, skills, prerequisite edges, questions and tutor prompt; view platform usage.
+Mathematics + Physics: both subjects appear in Today, maps and reports. Pausing Physics removes it from active learning surfaces while preserving its state. Resuming exposes the previous map and the diagnostic entry point for a fresh check.
 
-## Scope and acceptance
+The planner chooses active leaf skills using prerequisites, due reviews, weaknesses and the daily goal. A single active subject need not produce three lessons. This prototype uses a shared sample bank: Math 15 skills, Physics 18, English B1 26 subskills under Grammar, Vocabulary, Reading, Writing, Listening and Speaking.
 
-React/TypeScript/Vite responsive UI; Ukrainian and English interface and sample content; mathematics and mechanics/electricity curricula, English B1 with six separate strands. Knowledge is a graph, not a grade list. Unknown mastery remains visibly unassessed. Seed profiles are fictional. Learning data is server authoritative.
+The student and parent see mastery estimate, confidence, assessed/total and coverage separately. Subject percentage is withheld when evidence is sparse. Mastered requires independent work across days and successful spaced checks; activity/XP is not knowledge. Speaking completion changes activity only.
 
-Diagnostics adapt difficulty and prerequisites. Lessons use review (2), explain, guided practice (1), independent practice (3), mini-test (2), result. Hint usage reduces evidence weight. XP never changes mastery. Planner prioritizes weak prerequisites, overdue reviews, developing skills, then new content. Completed work changes map, plan and parent statistics.
+Weekly reports use the student’s local Monday through today, not a UTC rolling window. They show actual learning time, completed activity and start/end change on a comparable skill cohort. Unselected subjects are never labelled weak or zero.
 
-Speaking: conversation, role play and topic practice; microphone/error/retry, transcription, contextual feedback, voice and next turn. Without API credentials, explicitly labeled example transcription/heuristic feedback, with editable transcript; never imply mock output is an actual recording transcription. Listening has distinct evidence and mastery.
-
-## Boundaries
-
-This is a locally runnable MVP, not a certified learning assessment. Sample content is intentionally limited. Live AI requires server credentials; SMTP, password recovery, production deployment and child consent operations are follow-up work. No real children in seed data.
+Pilot remains blocked by content/measurement validation, live-provider/staging checks, consent and data lifecycle, recovery, backup/restore and deployment/device QA. Existing parent ownership and role controls remain in place.

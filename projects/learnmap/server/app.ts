@@ -3,9 +3,20 @@ import { randomUUID, randomBytes } from 'node:crypto';
 import { resolve } from 'node:path';
 import { z } from 'zod';
 import type { DB } from './db';
-import { serialized } from './db';
+import { transaction } from './db';
 import { auth, hashPassword, validPassword, login, role, hashToken } from './auth';
-import { snapshot, skillsFor, evidence, chooseDiagnostic, publicQuestion } from './domain';
+import {
+  snapshot,
+  skillsFor,
+  evidence,
+  chooseDiagnostic,
+  diagnosticMetrics,
+  publicQuestion,
+  selectSubjects,
+  subjectSummary,
+  requireActive,
+} from './domain';
+import { validTimezone } from '../shared/learning';
 import { AIService } from './ai';
 const credentials = z.object({
   email: z.string().email().max(200),
@@ -16,9 +27,10 @@ const langOf = (req: express.Request) => (req.body?.lang === 'uk' ? 'uk' : 'en')
 function fail(message: string, status = 400): never {
   throw Object.assign(new Error(message), { status });
 }
-export function createApp(db: DB) {
+export function createApp(db: DB, provider?: AIService) {
   const app = express();
-  const ai = new AIService(db);
+  const ai = provider || new AIService(db);
+  const tx = <T>(fn: () => Promise<T>) => transaction(db, fn);
   app.disable('x-powered-by');
   app.use((req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -49,21 +61,43 @@ export function createApp(db: DB) {
       return res.status(429).json({ error: 'Too many attempts. Try again later.' });
     next();
   });
-  // All API requests share a transaction queue, including reads, preventing dirty reads
-  // during multi-table completion on a single PostgreSQL connection.
+  // Only synchronous database phases hold the connection. External routes own short phases.
   const route = (method: 'get' | 'post' | 'put', path: string, ...handlers: any[]) => {
     const fn = handlers.pop();
     app[method](path, ...handlers, (req, res, next) => {
-      serialized(async () => {
-        await db.exec('BEGIN');
+      const external = [
+        '/api/speaking',
+        '/api/speaking/:id/turn',
+        '/api/speaking/:id/transcribe',
+        '/api/voice',
+        '/api/lesson/:id/hint',
+      ].includes(path);
+      const run = async () => {
+        let payload: any;
+        const send = res.json.bind(res);
+        res.json = (value: any) => {
+          payload = value;
+          return res;
+        };
         try {
-          await fn(req, res);
-          await db.exec('COMMIT');
+          if (external) await fn(req, res);
+          else await tx(() => fn(req, res));
+          // Explanation generation happens after the lesson state has committed.
+          if (payload?.stage === 'Explain')
+            try {
+              payload.explanation = await ai.explainConcept(payload.skill, langOf(req));
+            } catch {
+              payload.providerWarning =
+                'AI unavailable; showing the authored explanation / AI недоступний; показано підготовлене пояснення';
+            }
         } catch (e) {
-          await db.exec('ROLLBACK');
+          res.json = send;
           throw e;
         }
-      }).catch(next);
+        res.json = send;
+        if (payload !== undefined) send(payload);
+      };
+      run().catch(next);
     });
   };
   route('get', '/api/config', async (_req: any, res: any) =>
@@ -117,6 +151,12 @@ export function createApp(db: DB) {
     const u = res.locals.user;
     const p = (await db.query('SELECT * FROM student_profiles WHERE student_id=$1', [u.id]))
       .rows[0];
+    if (p)
+      p.subjects = (
+        await db.query('SELECT subject_id FROM student_subjects WHERE student_id=$1 AND active', [
+          u.id,
+        ])
+      ).rows.map((r) => r.subject_id);
     res.json({ ...u, profile: p });
   });
   route('post', '/api/logout', authenticated, async (req: any, res: any) => {
@@ -138,13 +178,34 @@ export function createApp(db: DB) {
         country: z.string().trim().min(1).max(80),
         learning_language: z.enum(['en', 'uk']),
         interface_language: z.enum(['en', 'uk']),
+        subjects: z
+          .array(z.enum(['math', 'physics', 'english']))
+          .min(1)
+          .max(3),
+        timezone: z.string().refine(validTimezone, 'Invalid timezone').default('Europe/Kyiv'),
+        daily_minutes: z.number().int().min(10).max(90).default(25),
       })
       .parse(req.body);
     await db.query('UPDATE users SET name=$2 WHERE id=$1', [res.locals.user.id, d.name]);
+    await selectSubjects(db, res.locals.user.id, d.subjects);
+    await db.query('UPDATE student_profiles SET timezone=$2,daily_minutes=$3 WHERE student_id=$1', [
+      res.locals.user.id,
+      d.timezone,
+      d.daily_minutes,
+    ]);
     await db.query(
       'UPDATE student_profiles SET age=$2,grade=$3,country=$4,learning_language=$5,interface_language=$6,onboarded=true WHERE student_id=$1',
       [res.locals.user.id, d.age, d.grade, d.country, d.learning_language, d.interface_language],
     );
+    res.json({ ok: true });
+  });
+  route('put', '/api/subjects', authenticated, role('student'), async (req: any, res: any) => {
+    const ids = z
+      .array(z.enum(['math', 'physics', 'english']))
+      .min(1)
+      .max(3)
+      .parse(req.body.subjects);
+    await selectSubjects(db, res.locals.user.id, ids);
     res.json({ ok: true });
   });
   async function allowedStudent(res: any, id?: string) {
@@ -225,6 +286,7 @@ export function createApp(db: DB) {
   }
   route('post', '/api/diagnostic', authenticated, role('student'), async (req: any, res: any) => {
     const subject = z.enum(['math', 'physics', 'english']).parse(req.body.subject);
+    await requireActive(db, res.locals.user.id, subject);
     const all = (await skillsFor(db, res.locals.user.id)).filter((s) => s.subject_id === subject);
     const qs = (
       await db.query(
@@ -232,7 +294,14 @@ export function createApp(db: DB) {
         [subject],
       )
     ).rows;
-    const state: any = { asked: [], skill: all[0].id, difficulty: 1, streak: 0 };
+    const baseline = subjectSummary(all);
+    const state: any = {
+      asked: [],
+      skill: all[0].id,
+      difficulty: 1,
+      streak: 0,
+      recheck: baseline.coverage >= 0.7 && baseline.confidence >= 0.35,
+    };
     const q = chooseDiagnostic(qs, all, state)!;
     state.current = q.id;
     state.started = Date.now();
@@ -241,7 +310,12 @@ export function createApp(db: DB) {
       'INSERT INTO diagnostic_sessions(id,student_id,subject_id,state) VALUES($1,$2,$3,$4)',
       [id, res.locals.user.id, subject, JSON.stringify(state)],
     );
-    res.json({ id, question: publicQuestion(q), count: 0 });
+    res.json({
+      id,
+      question: publicQuestion(q),
+      count: 0,
+      metrics: diagnosticMetrics(qs, all, state),
+    });
   });
   route(
     'post',
@@ -252,6 +326,7 @@ export function createApp(db: DB) {
       const answer = z.number().int().min(0).max(3).parse(req.body.answer);
       const session = await owned('diagnostic_sessions', req.params.id, res.locals.user.id);
       if (session.completed) fail('Already completed');
+      await requireActive(db, res.locals.user.id, session.subject_id);
       const state = session.state;
       if (req.body.questionId !== state.current) fail('This question has already changed', 409);
       const q = await question(state.current);
@@ -270,6 +345,8 @@ export function createApp(db: DB) {
         0,
         Math.min(180, Math.max(1, Math.round((Date.now() - state.started) / 1000))),
         'diagnostic',
+        session.id,
+        q.id,
       );
       state.asked.push(q.id);
       state.streak = correct ? state.streak + 1 : 0;
@@ -298,6 +375,7 @@ export function createApp(db: DB) {
         count: state.asked.length,
         question: next ? publicQuestion(next) : null,
         completed: !next,
+        metrics: diagnosticMetrics(qs, all, state),
       });
     },
   );
@@ -311,7 +389,7 @@ export function createApp(db: DB) {
         index: 2,
         stage: 'Explain',
         skill,
-        explanation: await ai.explainConcept(skill, lang),
+        explanation: skill.explanation[lang],
         completed: false,
       };
     const q = await question(state.questions[state.index]);
@@ -336,8 +414,12 @@ export function createApp(db: DB) {
     const skillId = z.string().parse(req.body.skill);
     const skill = (await skillsFor(db, res.locals.user.id)).find((s) => s.id === skillId);
     if (!skill) fail('Unknown skill');
+    await requireActive(db, res.locals.user.id, skill.subject_id);
     const qs = (
-      await db.query('SELECT id FROM questions WHERE skill_id=$1 ORDER BY difficulty,id', [skillId])
+      await db.query(
+        'SELECT q.id FROM questions q LEFT JOIN skill_evidence e ON e.question_id=q.id AND e.student_id=$2 WHERE q.skill_id=$1 GROUP BY q.id,q.difficulty ORDER BY max(e.created_at) ASC NULLS FIRST,q.difficulty,q.id',
+        [skillId, res.locals.user.id],
+      )
     ).rows;
     if (qs.length < 8) fail('This skill needs 8 questions before a lesson can start.');
     const review = skill.prerequisites[0]
@@ -369,18 +451,37 @@ export function createApp(db: DB) {
     authenticated,
     role('student'),
     async (req: any, res: any) => {
-      const session = await owned('lesson_sessions', req.params.id, res.locals.user.id);
-      const state = session.state;
-      if (session.completed || state.index === 2 || req.body.index !== state.index)
-        fail('No active question');
-      state.hints = Math.min(5, state.hints + 1);
-      const q = await question(state.questions[state.index]);
-      const hint = await ai.generateHint(q, state.hints, langOf(req));
-      await db.query('UPDATE lesson_sessions SET state=$2 WHERE id=$1', [
-        session.id,
-        JSON.stringify(state),
-      ]);
-      res.json({ hint, level: state.hints });
+      const read = await tx(async () => {
+        const session = await owned('lesson_sessions', req.params.id, res.locals.user.id);
+        const skill = (
+          await db.query('SELECT subject_id FROM skills WHERE id=$1', [session.skill_id])
+        ).rows[0];
+        await requireActive(db, res.locals.user.id, skill.subject_id);
+        if (
+          session.completed ||
+          session.state.index === 2 ||
+          req.body.index !== session.state.index
+        )
+          fail('No active question');
+        return { session, q: await question(session.state.questions[session.state.index]) };
+      });
+      const level = Math.min(5, read.session.state.hints + 1),
+        hint = await ai.generateHint(read.q, level, langOf(req));
+      await tx(async () => {
+        const fresh = await owned('lesson_sessions', req.params.id, res.locals.user.id);
+        if (
+          fresh.completed ||
+          fresh.state.index !== read.session.state.index ||
+          fresh.state.hints !== read.session.state.hints
+        )
+          fail('Lesson changed; refresh', 409);
+        fresh.state.hints = level;
+        await db.query('UPDATE lesson_sessions SET state=$2 WHERE id=$1', [
+          fresh.id,
+          JSON.stringify(fresh.state),
+        ]);
+      });
+      res.json({ hint, level });
     },
   );
   route(
@@ -391,13 +492,19 @@ export function createApp(db: DB) {
     async (req: any, res: any) => {
       const session = await owned('lesson_sessions', req.params.id, res.locals.user.id);
       if (session.completed) return res.json(await lessonView(session, langOf(req)));
+      await requireActive(
+        db,
+        res.locals.user.id,
+        (await db.query('SELECT subject_id FROM skills WHERE id=$1', [session.skill_id])).rows[0]
+          .subject_id,
+      );
       const state = session.state;
       if (req.body.index !== state.index) fail('Step already submitted', 409);
       let feedback = null;
       if (state.index !== 2) {
         const answer = z.number().int().min(0).max(3).parse(req.body.answer);
         const q = await question(state.questions[state.index]);
-        const { correct } = await ai.evaluateAnswer(q, answer);
+        const correct = q.answer === answer;
         await db.query('INSERT INTO student_answers VALUES($1,$2,$3,$4,$5,$6)', [
           session.id,
           state.index,
@@ -430,6 +537,8 @@ export function createApp(db: DB) {
             a.hints,
             Math.floor(seconds / answers.length),
             'answer',
+            session.id,
+            a.question_id,
           );
         const after = (
           await db.query(
@@ -460,6 +569,18 @@ export function createApp(db: DB) {
       });
     },
   );
+  const inflight = new Map<string, Promise<any>>();
+  async function singleFlight(key: string, fn: () => Promise<any>) {
+    const old = inflight.get(key);
+    if (old) return old;
+    const task = fn();
+    inflight.set(key, task);
+    try {
+      return await task;
+    } finally {
+      inflight.delete(key);
+    }
+  }
   route('post', '/api/speaking', authenticated, role('student'), async (req: any, res: any) => {
     const d = z
       .object({
@@ -467,18 +588,17 @@ export function createApp(db: DB) {
         topic: z.string().min(1).max(80),
       })
       .parse(req.body);
-    const id = randomUUID();
-    await db.query('INSERT INTO speaking_sessions(id,student_id,mode,topic) VALUES($1,$2,$3,$4)', [
-      id,
-      res.locals.user.id,
-      d.mode,
-      d.topic,
-    ]);
-    res.json({
-      id,
-      reply: await ai.generateConversationReply('', `${d.mode}: ${d.topic}`),
-      provider: ai.provider,
+    await tx(() => requireActive(db, res.locals.user.id, 'english'));
+    const reply = await ai.generateConversationReply('', d.mode + ': ' + d.topic),
+      id = randomUUID();
+    await tx(async () => {
+      await requireActive(db, res.locals.user.id, 'english');
+      await db.query(
+        'INSERT INTO speaking_sessions(id,student_id,mode,topic) VALUES($1,$2,$3,$4)',
+        [id, res.locals.user.id, d.mode, d.topic],
+      );
     });
+    res.json({ id, reply, provider: ai.provider });
   });
   route(
     'post',
@@ -487,15 +607,44 @@ export function createApp(db: DB) {
     role('student'),
     express.raw({ type: ['audio/*', 'application/octet-stream'], limit: '8mb' }),
     async (req: any, res: any) => {
-      await owned('speaking_sessions', req.params.id, res.locals.user.id);
       if (!Buffer.isBuffer(req.body) || !req.body.length) fail('Empty audio');
-      const mime = req.headers['content-type'] || 'audio/webm';
-      const result = await ai.transcribeSpeech(req.body, mime);
-      await db.query(
-        'INSERT INTO audio_records_metadata(id,session_id,bytes,mime) VALUES($1,$2,$3,$4)',
-        [randomUUID(), req.params.id, req.body.length, mime],
+      const requestId = z
+          .string()
+          .uuid()
+          .parse(req.headers['x-request-id'] || randomUUID()),
+        key = res.locals.user.id + ':transcribe:' + req.params.id + ':' + requestId;
+      res.json(
+        await singleFlight(key, async () => {
+          const cached = await tx(async () => {
+            const session = await owned('speaking_sessions', req.params.id, res.locals.user.id);
+            if (session.completed) fail('This conversation has ended');
+            await requireActive(db, res.locals.user.id, 'english');
+            return (
+              await db.query(
+                "SELECT result FROM ai_requests WHERE id=$1 AND student_id=$2 AND session_id=$3 AND kind='transcribe'",
+                [requestId, res.locals.user.id, session.id],
+              )
+            ).rows[0]?.result;
+          });
+          if (cached) return cached;
+          const mime = req.headers['content-type'] || 'audio/webm',
+            result = await ai.transcribeSpeech(req.body, mime);
+          await tx(async () => {
+            const fresh = await owned('speaking_sessions', req.params.id, res.locals.user.id);
+            if (fresh.completed) fail('This conversation has ended');
+            await requireActive(db, res.locals.user.id, 'english');
+            await db.query(
+              'INSERT INTO audio_records_metadata(id,session_id,bytes,mime) VALUES($1,$2,$3,$4)',
+              [randomUUID(), fresh.id, req.body.length, mime],
+            );
+            await db.query(
+              'INSERT INTO ai_requests(id,student_id,session_id,kind,result) VALUES($1,$2,$3,$4,$5)',
+              [requestId, res.locals.user.id, fresh.id, 'transcribe', JSON.stringify(result)],
+            );
+          });
+          return result;
+        }),
       );
-      res.json(result);
     },
   );
   route(
@@ -507,59 +656,99 @@ export function createApp(db: DB) {
       const d = z
         .object({ text: z.string().trim().min(3).max(2000), requestId: z.string().uuid() })
         .parse(req.body);
-      const session = await owned('speaking_sessions', req.params.id, res.locals.user.id);
-      const previous = (
-        await db.query('SELECT * FROM speaking_turns WHERE id=$1 AND session_id=$2', [
-          d.requestId,
-          session.id,
-        ])
-      ).rows[0];
-      if (previous) return res.json(previous);
-      const history = (
-        await db.query(
-          'SELECT transcript,reply FROM speaking_turns WHERE session_id=$1 ORDER BY created_at DESC LIMIT 6',
-          [session.id],
-        )
-      ).rows;
-      const context = `${session.mode}: ${session.topic}. Previous turns: ${JSON.stringify(history.reverse())}`;
-      const feedback = await ai.evaluateSpeaking(d.text, context);
-      const reply = await ai.generateConversationReply(d.text, context);
-      await db.query(
-        'INSERT INTO speaking_turns(id,session_id,transcript,feedback,reply) VALUES($1,$2,$3,$4,$5)',
-        [d.requestId, session.id, d.text, JSON.stringify(feedback), reply],
-      );
-      // Conservative text-only practice evidence, explicitly distinct from pronunciation assessment.
-      if (session.completed) fail('This conversation has ended');
-      const last = (
-        await db.query(
-          'SELECT created_at FROM speaking_turns WHERE session_id=$1 AND id<>$2 ORDER BY created_at DESC LIMIT 1',
-          [session.id, d.requestId],
-        )
-      ).rows[0];
-      const seconds = Math.max(
-        1,
-        Math.min(
-          180,
-          Math.round(
-            (Date.now() - new Date(last?.created_at || session.created_at).getTime()) / 1000,
-          ),
+      res.json(
+        await singleFlight(
+          res.locals.user.id + ':turn:' + req.params.id + ':' + d.requestId,
+          async () => {
+            const read = await tx(async () => {
+              const session = await owned('speaking_sessions', req.params.id, res.locals.user.id);
+              const previous = (
+                await db.query('SELECT * FROM speaking_turns WHERE id=$1 AND session_id=$2', [
+                  d.requestId,
+                  session.id,
+                ])
+              ).rows[0];
+              if (previous) return { previous };
+              if (session.completed) fail('This conversation has ended');
+              await requireActive(db, res.locals.user.id, 'english');
+              const history = (
+                await db.query(
+                  'SELECT transcript,reply FROM speaking_turns WHERE session_id=$1 ORDER BY created_at DESC LIMIT 6',
+                  [session.id],
+                )
+              ).rows;
+              return { session, history };
+            });
+            if (read.previous) return read.previous;
+            const context =
+              read.session.mode +
+              ': ' +
+              read.session.topic +
+              '. Previous turns: ' +
+              JSON.stringify(read.history!.reverse());
+            const feedback = await ai.evaluateSpeaking(d.text, context),
+              reply = await ai.generateConversationReply(d.text, context);
+            return tx(async () => {
+              const session = await owned('speaking_sessions', req.params.id, res.locals.user.id);
+              if (session.completed) fail('This conversation has ended');
+              await requireActive(db, res.locals.user.id, 'english');
+              const previous = (
+                await db.query('SELECT * FROM speaking_turns WHERE id=$1 AND session_id=$2', [
+                  d.requestId,
+                  session.id,
+                ])
+              ).rows[0];
+              if (previous) return previous;
+              const last = (
+                await db.query(
+                  'SELECT created_at FROM speaking_turns WHERE session_id=$1 ORDER BY created_at DESC LIMIT 1',
+                  [session.id],
+                )
+              ).rows[0];
+              const seconds = Math.max(
+                1,
+                Math.min(
+                  180,
+                  Math.round(
+                    (Date.now() - new Date(last?.created_at || session.created_at).getTime()) /
+                      1000,
+                  ),
+                ),
+              );
+              await db.query(
+                'INSERT INTO speaking_turns(id,session_id,transcript,feedback,reply) VALUES($1,$2,$3,$4,$5)',
+                [d.requestId, session.id, d.text, JSON.stringify(feedback), reply],
+              );
+              // Free conversation is activity, not a calibrated proficiency assessment.
+              const score =
+                (
+                  await db.query(
+                    "SELECT mastery_score FROM student_skill_mastery WHERE student_id=$1 AND skill_id='speaking'",
+                    [res.locals.user.id],
+                  )
+                ).rows[0]?.mastery_score || 0;
+              await db.query(
+                "INSERT INTO learning_events(id,student_id,skill_id,kind,before_score,after_score,seconds,xp,session_id) VALUES($1,$2,'speaking','speaking-turn',$3,$3,$4,3,$5)",
+                [randomUUID(), res.locals.user.id, score, seconds, session.id],
+              );
+              await db.query('UPDATE student_profiles SET xp=xp+3 WHERE student_id=$1', [
+                res.locals.user.id,
+              ]);
+              await db.query(
+                'INSERT INTO ai_interactions(id,student_id,method,provider) VALUES($1,$2,$3,$4)',
+                [randomUUID(), res.locals.user.id, 'evaluateSpeaking', ai.provider],
+              );
+              return {
+                id: d.requestId,
+                transcript: d.text,
+                feedback,
+                reply,
+                change: { before: score, after: score },
+              };
+            });
+          },
         ),
       );
-      const practice = d.text.split(/\s+/).length >= 6 && feedback.correct !== false;
-      const change = await evidence(
-        db,
-        res.locals.user.id,
-        'speaking',
-        practice,
-        3,
-        seconds,
-        'speaking-turn',
-      );
-      await db.query(
-        'INSERT INTO ai_interactions(id,student_id,method,provider) VALUES($1,$2,$3,$4)',
-        [randomUUID(), res.locals.user.id, 'evaluateSpeaking', ai.provider],
-      );
-      res.json({ id: d.requestId, transcript: d.text, feedback, reply, change });
     },
   );
   route(
@@ -593,6 +782,14 @@ export function createApp(db: DB) {
   );
   route('post', '/api/voice', authenticated, async (req: any, res: any) => {
     const text = z.string().min(1).max(3000).parse(req.body.text);
+    await tx(async () => {
+      if (res.locals.user.role === 'student')
+        await requireActive(db, res.locals.user.id, 'english');
+      if (req.body.sessionId) {
+        const session = await owned('speaking_sessions', req.body.sessionId, res.locals.user.id);
+        if (session.completed) fail('This conversation has ended');
+      }
+    });
     const audio = await ai.synthesizeSpeech(text);
     if (!audio) return res.json({ browserVoice: true, text });
     res.type('audio/mpeg').send(audio);
@@ -600,6 +797,7 @@ export function createApp(db: DB) {
   const passage =
     'Last Saturday, Sam visited a science museum with a friend. They travelled by train and arrived at ten. The robotics exhibition was their favourite part. After lunch, they joined a workshop and built a small solar-powered car.';
   route('get', '/api/listening', authenticated, role('student'), async (_req: any, res: any) => {
+    await requireActive(db, res.locals.user.id, 'english');
     const id = randomUUID();
     await db.query(
       "INSERT INTO lesson_sessions(id,student_id,skill_id,state) VALUES($1,$2,'listening',$3)",
@@ -622,7 +820,8 @@ export function createApp(db: DB) {
     role('student'),
     async (req: any, res: any) => {
       const s = await owned('lesson_sessions', req.params.id, res.locals.user.id);
-      if (s.state.kind !== 'listening') fail('Invalid session');
+      if (s.state.kind !== 'listening' || s.completed) fail('Invalid session');
+      await requireActive(db, res.locals.user.id, 'english');
       s.state.hint = 1;
       await db.query('UPDATE lesson_sessions SET state=$2 WHERE id=$1', [
         s.id,
@@ -639,6 +838,7 @@ export function createApp(db: DB) {
     async (req: any, res: any) => {
       const s = await owned('lesson_sessions', req.params.id, res.locals.user.id);
       if (s.state.kind !== 'listening' || s.completed) fail('Already completed');
+      await requireActive(db, res.locals.user.id, 'english');
       const answer = z.number().int().min(0).max(3).parse(req.body.answer);
       const change = await evidence(
         db,
@@ -648,6 +848,8 @@ export function createApp(db: DB) {
         s.state.hint,
         Math.min(600, Math.round((Date.now() - s.state.started) / 1000)),
         'listening',
+        s.id,
+        'museum-workshop',
       );
       await db.query('UPDATE lesson_sessions SET completed=true WHERE id=$1', [s.id]);
       res.json({ correct: answer === 0, change });
@@ -692,7 +894,7 @@ export function createApp(db: DB) {
     };
     visit(d.id, new Set());
     await db.query(
-      'INSERT INTO skills VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(id) DO UPDATE SET title=$4,explanation=$5,subject_id=$2,topic_id=$3,sort_order=$6',
+      'INSERT INTO skills(id,subject_id,topic_id,title,explanation,sort_order) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(id) DO UPDATE SET title=$4,explanation=$5,subject_id=$2,topic_id=$3,sort_order=$6',
       [
         d.id,
         d.subject_id,
@@ -802,16 +1004,14 @@ export function createApp(db: DB) {
     (error: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
       if (res.headersSent) return;
       const status = error.status || (error instanceof z.ZodError ? 400 : 500);
-      res
-        .status(status)
-        .json({
-          error:
-            error instanceof z.ZodError
-              ? error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')
-              : status === 500
-                ? 'Unable to complete request. Check server configuration and try again.'
-                : error.message,
-        });
+      res.status(status).json({
+        error:
+          error instanceof z.ZodError
+            ? error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ')
+            : status === 500
+              ? 'Unable to complete request. Check server configuration and try again.'
+              : error.message,
+      });
       if (status === 500) console.error(error.message);
     },
   );

@@ -1,9 +1,9 @@
-# Speaking and Listening
+# Speaking and listening
 
-Three modes: Conversation; Role Play (airport, café, university, hotel, job interview, meeting a new person); Topic Practice (hobby, technology, robotics, travel, school, future profession). Each server session preserves turns and scenario context.
+Speaking supports Conversation, Role Play and Topic Practice, browser recording (60 seconds / 8 MB), editable transcription and typed fallback. Default mock returns an explicit example transcript. Real transcription/TTS adapters require separate API setup and verification.
 
-MediaRecorder + getUserMedia; explicit start/stop; stop tracks on stop, error and unmount; 60 second/8 MB limit; server transcription; text confirmation; AI analysis; persisted speaking evidence; voice reply; next question. Browser microphone requires localhost or HTTPS. Permission denial and absent devices are recoverable; typed transcript remains usable.
+A turn persists transcript, reply and qualitative practice/grammar/vocabulary/relevance/sentence-complexity fields. Fluency and pronunciation stay Not assessed without acoustic analysis. Turn time and XP are activity; no free-conversation turn or completed conversation automatically raises proficiency. Completion counts one session and is idempotent.
 
-Without credentials, audio returns an explicitly marked example transcript. It does not pretend to understand the audio. Student edits/enters the intended utterance. Heuristic feedback corrects a few sample grammar patterns; other assessments are limited. Mock voice uses browser speech synthesis; availability varies by OS/browser. Live voice uses server synthesis. Pronunciation and acoustic fluency are not scored from text. Source audio is held only transiently in memory and discarded after transcription.
+Completed sessions are rejected before transcription/feedback/TTS session requests. Ownership and active English selection are rechecked after provider calls. Duplicate turn UUIDs persist once; concurrent duplicates share one call in the single server process. Audio is processed in memory; only metadata and text/results persist. Data-retention and consent workflows remain pilot work.
 
-Listening plays an authored passage via the same voice interface, asks comprehension questions and records evidence against the separate Listening skill. Revealing the transcript counts as a hint.
+Listening retains a narrated sample passage and a comprehension question. New listening subskills are explicitly text-based strategy exercises, not acoustic proficiency measurements. Full real-device, live voice and diverse audio-content evaluation remains outstanding.

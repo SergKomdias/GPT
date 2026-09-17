@@ -2,6 +2,7 @@ import { PGlite } from '@electric-sql/pglite';
 import pg from 'pg';
 import { readFile, mkdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
+import { AsyncLocalStorage } from 'node:async_hooks';
 export interface DB {
   query(sql: string, params?: any[]): Promise<{ rows: any[] }>;
   exec(sql: string): Promise<unknown>;
@@ -22,12 +23,43 @@ export async function createDB(path = process.env.DATA_DIR || '.data/learnmap'):
     db = new PGlite(path) as unknown as DB;
   }
   await db.exec(await readFile(new URL('./schema.sql', import.meta.url), 'utf8'));
+  return guarded(db);
+}
+const transactions = new WeakMap<DB, <T>(fn: () => Promise<T>) => Promise<T>>();
+function guarded(raw: DB): DB {
+  let queue: Promise<unknown> = Promise.resolve();
+  const scope = new AsyncLocalStorage<boolean>();
+  const enqueue = <T>(fn: () => Promise<T>) => {
+    const next = queue.then(fn);
+    queue = next.catch(() => {});
+    return next;
+  };
+  const db: DB = {
+    query: (s, p) => (scope.getStore() ? raw.query(s, p) : enqueue(() => raw.query(s, p))),
+    exec: (s) => (scope.getStore() ? raw.exec(s) : enqueue(() => raw.exec(s))),
+    close: () => enqueue(() => raw.close()),
+  };
+  transactions.set(db, (fn) =>
+    scope.getStore()
+      ? fn()
+      : enqueue(() =>
+          scope.run(true, async () => {
+            await raw.exec('BEGIN');
+            try {
+              const value = await fn();
+              await raw.exec('COMMIT');
+              return value;
+            } catch (e) {
+              await raw.exec('ROLLBACK');
+              throw e;
+            }
+          }),
+        ),
+  );
   return db;
 }
-// Serialize mutations so embedded and pooled PostgreSQL have identical atomic semantics.
-let queue: Promise<unknown> = Promise.resolve();
-export function serialized<T>(fn: () => Promise<T>): Promise<T> {
-  const next = queue.then(fn);
-  queue = next.catch(() => {});
-  return next;
+export function transaction<T>(db: DB, fn: () => Promise<T>): Promise<T> {
+  const tx = transactions.get(db);
+  if (!tx) throw new Error('Use createDB for transactional access');
+  return tx(fn);
 }

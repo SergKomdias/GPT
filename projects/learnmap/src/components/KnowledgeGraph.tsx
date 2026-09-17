@@ -13,7 +13,11 @@ export function KnowledgeGraph({
   selected?: string;
 }) {
   const { lang, t } = useApp();
-  const preview = ['arithmetic', 'expressions', 'linear', 'quadratic', 'functions'];
+  const preview = skills.some((s) => s.id === 'arithmetic')
+    ? ['arithmetic', 'expressions', 'linear', 'quadratic', 'functions']
+    : skills.some((s) => s.id === 'present-simple')
+      ? ['present-simple', 'present-continuous', 'past-simple', 'present-perfect', 'conditionals']
+      : skills.slice(0, 5).map((s) => s.id);
   const nodes = compact
     ? (preview.map((id) => skills.find((s) => s.id === id)).filter(Boolean) as Skill[])
     : skills;
@@ -102,7 +106,7 @@ export function KnowledgeGraph({
           return (
             <g
               key={s.id}
-              className={`graph-node ${s.confidence_score === 0 ? 'unknown' : masteryStatus(s.mastery_score)} ${selected === s.id ? 'selected' : ''}`}
+              className={`graph-node ${s.confidence_score === 0 ? 'unknown' : masteryStatus(s)} ${selected === s.id ? 'selected' : ''}`}
             >
               <circle cx={x} cy={y} r="31" className="node-halo" />
               <circle cx={x} cy={y} r="25" className="node-circle" />

@@ -5,18 +5,16 @@ export async function api<T = any>(path: string, method = 'GET', body?: unknown)
     headers: body ? { 'Content-Type': 'application/json' } : {},
     body: body ? JSON.stringify(body) : undefined,
   });
-  const data = await r
-    .json()
-    .catch(() => ({
-      error: 'Server unavailable. Please try again. / Сервер недоступний. Спробуй ще раз.',
-    }));
+  const data = await r.json().catch(() => ({
+    error: 'Server unavailable. Please try again. / Сервер недоступний. Спробуй ще раз.',
+  }));
   if (!r.ok) throw new Error(data.error || 'Request failed');
   return data;
 }
 export async function transcribe(id: string, blob: Blob) {
   const r = await fetch(`/api/speaking/${id}/transcribe`, {
     method: 'POST',
-    headers: { 'Content-Type': blob.type || 'audio/webm' },
+    headers: { 'Content-Type': blob.type || 'audio/webm', 'X-Request-ID': crypto.randomUUID() },
     body: blob,
   });
   const data = await r.json();
@@ -32,12 +30,12 @@ export function stopVoice() {
   if (objectUrl) URL.revokeObjectURL(objectUrl);
   objectUrl = null;
 }
-export async function speak(text: string) {
+export async function speak(text: string, sessionId?: string) {
   stopVoice();
   const r = await fetch('/api/voice', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({ text, sessionId }),
   });
   if (!r.ok) throw new Error('Voice unavailable / Озвучення недоступне');
   if (r.headers.get('content-type')?.includes('json')) {

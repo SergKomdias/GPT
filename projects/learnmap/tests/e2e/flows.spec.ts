@@ -15,12 +15,20 @@ test('registration, onboarding, diagnostic, lesson, linked parent, and responsiv
   await page.getByLabel('Password', { exact: true }).fill(testPassword);
   await page.getByRole('button', { name: 'Create account', exact: true }).last().click();
   await expect(page.getByRole('heading', { name: 'Let’s make this your map.' })).toBeVisible();
+  await page.getByRole('checkbox', { name: 'Mathematics', exact: true }).check();
+  await page.getByRole('checkbox', { name: 'Physics', exact: true }).check();
+  await page.getByRole('checkbox', { name: 'English', exact: true }).check();
   await page.getByRole('button', { name: 'Choose a subject' }).click();
   await page.getByRole('link', { name: 'Start diagnostic', exact: true }).first().click();
-  for (let i = 0; i < 8; i++) {
-    await expect(page.locator('.practice-meta')).toContainText(`${i + 1} / 8`);
+  for (let i = 0; i < 24; i++) {
+    if (await page.getByText('Your map is taking shape.', { exact: true }).isVisible()) break;
+    await expect(page.locator('.practice-meta')).toContainText(`${i + 1} / 24`);
     await page.getByRole('radio').first().check();
+    const response = page.waitForResponse(
+      (r) => r.url().includes('/diagnostic/') && r.url().endsWith('/answer'),
+    );
     await page.getByRole('button', { name: 'Continue', exact: true }).click();
+    if ((await (await response).json()).completed) break;
   }
   await expect(page.getByRole('heading', { name: 'Your map is taking shape.' })).toBeVisible();
   await page.getByRole('link', { name: 'Explore my LearnMap' }).click();

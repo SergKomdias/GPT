@@ -34,14 +34,11 @@ export async function seed(db: DB) {
       JSON.stringify(bi(en, uk)),
     ]);
   for (const [i, s] of seedSkills.entries()) {
-    await db.query('INSERT INTO skills VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT DO NOTHING', [
-      s.id,
-      s.subject,
-      s.topic,
-      JSON.stringify(s.title),
-      JSON.stringify(s.explanation),
-      i,
-    ]);
+    await db.query(
+      'INSERT INTO skills(id,subject_id,topic_id,title,explanation,sort_order) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT DO NOTHING',
+      [s.id, s.subject, s.topic, JSON.stringify(s.title), JSON.stringify(s.explanation), i],
+    );
+    if (s.strand) await db.query('UPDATE skills SET strand_id=$2 WHERE id=$1', [s.id, s.strand]);
     await db.query('INSERT INTO lessons VALUES($1,$2,$3) ON CONFLICT DO NOTHING', [
       'lesson-' + s.id,
       s.id,
@@ -119,7 +116,10 @@ export async function seed(db: DB) {
     await db.query(
       "INSERT INTO parent_student_links VALUES('demo-parent','demo-student') ON CONFLICT DO NOTHING",
     );
-    for (const s of seedSkills)
+    await db.query(
+      "INSERT INTO student_subjects(student_id,subject_id) SELECT 'demo-student',id FROM subjects ON CONFLICT DO NOTHING",
+    );
+    for (const s of seedSkills.filter((s) => !s.strand))
       await db.query(
         'INSERT INTO student_skill_mastery(id,student_id,skill_id,mastery_score,confidence_score) VALUES($1,$2,$3,$4,0.35) ON CONFLICT DO NOTHING',
         ['demo-' + s.id, 'demo-student', s.id, s.score],
@@ -130,4 +130,38 @@ export async function seed(db: DB) {
       "INSERT INTO users VALUES('configured-admin',$1,$2,'admin','Administrator') ON CONFLICT DO NOTHING",
       [process.env.ADMIN_EMAIL.toLowerCase(), hashPassword(process.env.ADMIN_PASSWORD)],
     );
+  if (!(await db.query("SELECT 1 FROM schema_migrations WHERE id='learning-v2'")).rows.length) {
+    // Existing learners keep their three subjects; new onboarding explicitly chooses.
+    await db.query(
+      'INSERT INTO student_subjects(student_id,subject_id) SELECT student_id,id FROM student_profiles CROSS JOIN subjects WHERE onboarded ON CONFLICT DO NOTHING',
+    );
+    // Legacy confidence has no independently attributable retention proof.
+    await db.query(
+      'UPDATE student_skill_mastery SET confidence_score=LEAST(confidence_score,0.15)',
+    );
+    await db.query(
+      'UPDATE student_skill_mastery SET confidence_score=0 WHERE attempts_count=0 AND skill_id IN(SELECT id FROM skills WHERE strand_id IS NOT NULL)',
+    );
+    await db.query("INSERT INTO schema_migrations(id) VALUES('learning-v2')");
+  }
+  if (
+    !(await db.query("SELECT 1 FROM schema_migrations WHERE id='learning-v2-content'")).rows.length
+  ) {
+    for (const skill of seedSkills)
+      for (let n = 0; n < 9; n++) {
+        const q = sampleQuestion(skill.id, n);
+        await db.query(
+          'UPDATE questions SET prompt=$2,options=$3,answer=$4,reasoning=$5,hints=$6 WHERE id=$1',
+          [
+            q.id,
+            JSON.stringify(q.prompt),
+            JSON.stringify(q.options),
+            q.answer,
+            JSON.stringify(q.reasoning),
+            JSON.stringify(q.hints),
+          ],
+        );
+      }
+    await db.query("INSERT INTO schema_migrations(id) VALUES('learning-v2-content')");
+  }
 }

@@ -77,6 +77,8 @@ describe.sequential('API integration with real PostgreSQL engine', () => {
             country: 'Ukraine',
             learning_language: 'en',
             interface_language: 'uk',
+            subjects: ['math', 'physics', 'english'],
+            timezone: 'Europe/Kyiv',
           },
           student,
         )
@@ -117,7 +119,7 @@ describe.sequential('API integration with real PostgreSQL engine', () => {
   });
   it('runs adaptive diagnosis without exposing answer keys', async () => {
     let s = (await request('/diagnostic', 'POST', { subject: 'math' }, student)).data;
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 24 && !s.completed; i++) {
       expect(s.question.answer).toBeUndefined();
       expect(s.question.hints).toBeUndefined();
       const q = (await db.query('SELECT answer FROM questions WHERE id=$1', [s.question.id]))

@@ -31,6 +31,17 @@ export function Diagnostic() {
       {state?.completed ? (
         <section className="panel result">
           <div className="result-symbol">✓</div>
+          <p>
+            {state.metrics?.reason === 'question-limit'
+              ? t(
+                  'Question limit reached. Uncertainty remains; continue in future sessions.',
+                  'Досягнуто межі запитань. Невизначеність залишається; продовжимо на наступних заняттях.',
+                )
+              : t(
+                  'Coverage and diagnostic confidence reached.',
+                  'Достатнє покриття й впевненість діагностики.',
+                )}
+          </p>
           <h2>{t('Your map is taking shape.', 'Твоя карта набуває форми.')}</h2>
           <p>
             {t(
@@ -49,10 +60,21 @@ export function Diagnostic() {
       ) : state ? (
         <section className="panel practice-panel">
           <div className="practice-meta">
-            <span>{t('Adaptive diagnostic', 'Адаптивна діагностика')}</span>
-            <span>{state.count + 1} / 8</span>
+            <span>
+              {state.metrics.recheck
+                ? t('Short recheck', 'Коротка повторна перевірка')
+                : t('Adaptive diagnostic', 'Адаптивна діагностика')}
+            </span>
+            <span>
+              {state.count + 1} / {state.metrics.maxQuestions} {t('maximum', 'максимум')}
+            </span>
           </div>
-          <progress value={state.count} max={8} />
+          <p className="coverage">
+            {t('Coverage', 'Покриття')} {Math.round(state.metrics.coverage * 100)}% ·{' '}
+            {t('Diagnostic confidence', 'Впевненість діагностики')}{' '}
+            {Math.round(state.metrics.confidence * 100)}%
+          </p>
+          <progress value={state.count} max={state.metrics.maxQuestions} />
           {feedback ? (
             <Notice>
               {feedback.correct

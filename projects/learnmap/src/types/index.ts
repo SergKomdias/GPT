@@ -13,6 +13,9 @@ export interface User {
     learning_language: Language;
     interface_language: Language;
     xp: number;
+    timezone: string;
+    daily_minutes: number;
+    subjects: string[];
   };
 }
 export interface Skill {
@@ -32,6 +35,11 @@ export interface Skill {
   next_review_at: string | null;
   last_practiced_at: string | null;
   sort_order: number;
+  strand_id: string | null;
+  independent_count: number;
+  evidence_days: number;
+  retention_count: number;
+  long_retention_count: number;
 }
 export interface Subject {
   id: string;
@@ -39,6 +47,9 @@ export interface Subject {
   mastery: number | null;
   assessed: number;
   total: number;
+  confidence: number;
+  coverage: number;
+  provisional: boolean;
 }
 export interface Plan {
   subject: string;
@@ -64,12 +75,24 @@ export interface Snapshot {
   plan: Plan[];
   events: LearningEvent[];
   streak: number;
+  today: string;
+  activity: { day: string; seconds: number }[];
+  subjectSelections: (Subject & { active: boolean; selection_status: string })[];
   report: {
     student: string;
     seconds: number;
     completed: number;
     goal: number;
-    subjects: (Subject & { delta: number; seconds: number })[];
+    period_start: string;
+    period_end: string;
+    timezone: string;
+    subjects: (Subject & {
+      delta: number | null;
+      seconds: number;
+      comparable_skills: number;
+      start_estimate: number | null;
+      end_estimate: number | null;
+    })[];
     strengths: Skill[];
     gaps: Skill[];
     next: Plan[];

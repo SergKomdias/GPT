@@ -1,3 +1,4 @@
+import { Coverage } from '../../components/Coverage';
 import type { Snapshot } from '../../types';
 import { useApp } from '../../hooks/useApp';
 import { MasteryBar, SubjectIcon, Empty } from '../../components/UI';
@@ -5,17 +6,13 @@ import { minutes } from '../../utils/format';
 export function Analytics({ data }: { data: Snapshot }) {
   const { t, lang } = useApp();
   const events = data.events;
-  const activity = Array.from({ length: 7 }, (_, i) => {
-    const date = new Date();
-    date.setDate(date.getDate() - 6 + i);
-    const day = date.toISOString().slice(0, 10);
-    return {
-      label: date.toLocaleDateString(lang === 'uk' ? 'uk-UA' : 'en-GB', { weekday: 'short' }),
-      seconds: events
-        .filter((e) => e.created_at.slice(0, 10) === day)
-        .reduce((a, e) => a + e.seconds, 0),
-    };
-  });
+  const activity = data.activity.map((d) => ({
+    ...d,
+    label: new Date(d.day + 'T12:00:00Z').toLocaleDateString(lang === 'uk' ? 'uk-UA' : 'en-GB', {
+      weekday: 'short',
+      timeZone: 'UTC',
+    }),
+  }));
   const max = Math.max(60, ...activity.map((d) => d.seconds));
   return (
     <>
@@ -57,17 +54,19 @@ export function Analytics({ data }: { data: Snapshot }) {
           </div>
         </section>
         <section className="panel">
-          <h2>{t('Subject mastery', 'Знання за предметами')}</h2>
+          <h2>{t('Mastery estimates', 'Оцінки знань')}</h2>
           {data.report.subjects.map((s) => (
             <div className="analytics-subject" key={s.id}>
               <SubjectIcon subject={s.id} />
               <div>
                 <strong>{s.title[lang]}</strong>
                 <MasteryBar value={s.mastery} />
+                <Coverage subject={s} />
                 <small>
-                  {s.delta >= 0 ? '+' : ''}
-                  {s.delta.toFixed(1)} {t('points this week', 'пунктів за тиждень')} ·{' '}
-                  {minutes(s.seconds)}
+                  {s.delta !== null && s.delta >= 0 ? '+' : ''}
+                  {s.delta === null ? '—' : s.delta.toFixed(1)}{' '}
+                  {t('points on comparable skills', 'пунктів на порівнюваних навичках')} (
+                  {s.comparable_skills}) · {minutes(s.seconds)}
                 </small>
               </div>
             </div>
@@ -81,7 +80,9 @@ export function Analytics({ data }: { data: Snapshot }) {
             {events.slice(0, 30).map((e) => (
               <div key={e.id}>
                 <span>
-                  {new Date(e.created_at).toLocaleDateString(lang === 'uk' ? 'uk-UA' : 'en-GB')}
+                  {new Date(e.created_at).toLocaleDateString(lang === 'uk' ? 'uk-UA' : 'en-GB', {
+                    timeZone: data.profile.timezone,
+                  })}
                 </span>
                 <strong>{e.title[lang]}</strong>
                 <span>{e.kind}</span>

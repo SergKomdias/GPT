@@ -33,3 +33,18 @@ CREATE TABLE IF NOT EXISTS audio_records_metadata (id text PRIMARY KEY, session_
 ALTER TABLE speaking_sessions ADD COLUMN IF NOT EXISTS completed boolean NOT NULL DEFAULT false;
 CREATE TABLE IF NOT EXISTS schema_migrations (id text PRIMARY KEY, applied_at timestamptz NOT NULL DEFAULT now());
 ALTER TABLE learning_events ADD COLUMN IF NOT EXISTS event_order bigserial;
+ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS timezone text NOT NULL DEFAULT 'Europe/Kyiv';
+ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS daily_minutes integer NOT NULL DEFAULT 25 CHECK(daily_minutes BETWEEN 10 AND 90);
+CREATE TABLE IF NOT EXISTS student_subjects(student_id text REFERENCES users(id) ON DELETE CASCADE, subject_id text REFERENCES subjects(id), active boolean NOT NULL DEFAULT true, started_at timestamptz NOT NULL DEFAULT now(), paused_at timestamptz, PRIMARY KEY(student_id,subject_id));
+CREATE INDEX IF NOT EXISTS student_subjects_active ON student_subjects(student_id) WHERE active;
+ALTER TABLE skills ADD COLUMN IF NOT EXISTS strand_id text;
+ALTER TABLE student_skill_mastery ADD COLUMN IF NOT EXISTS independent_count integer NOT NULL DEFAULT 0;
+ALTER TABLE student_skill_mastery ADD COLUMN IF NOT EXISTS evidence_days integer NOT NULL DEFAULT 0;
+ALTER TABLE student_skill_mastery ADD COLUMN IF NOT EXISTS retention_count integer NOT NULL DEFAULT 0;
+ALTER TABLE student_skill_mastery ADD COLUMN IF NOT EXISTS long_retention_count integer NOT NULL DEFAULT 0;
+CREATE TABLE IF NOT EXISTS skill_evidence(id text PRIMARY KEY, student_id text REFERENCES users(id), skill_id text REFERENCES skills(id), session_id text NOT NULL, question_id text NOT NULL, correct boolean NOT NULL, independent boolean NOT NULL, local_day date NOT NULL, retained boolean NOT NULL, long_retained boolean NOT NULL, before_state jsonb NOT NULL, after_state jsonb NOT NULL, created_at timestamptz NOT NULL, UNIQUE(student_id,session_id,question_id));
+CREATE INDEX IF NOT EXISTS evidence_owner_skill_time ON skill_evidence(student_id,skill_id,created_at);
+ALTER TABLE skill_evidence ADD COLUMN IF NOT EXISTS evidence_order bigserial;
+ALTER TABLE learning_events ADD COLUMN IF NOT EXISTS session_id text;
+ALTER TABLE learning_events ADD COLUMN IF NOT EXISTS evidence_id text;
+CREATE TABLE IF NOT EXISTS ai_requests(id text PRIMARY KEY, student_id text REFERENCES users(id), session_id text, kind text NOT NULL, result jsonb, created_at timestamptz NOT NULL DEFAULT now());

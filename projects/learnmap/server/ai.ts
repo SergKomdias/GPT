@@ -96,6 +96,8 @@ export class AIService {
         vocabulary: 'Reviewed in feedback',
         fluency: 'Not assessed from text',
         pronunciation: 'Not assessed',
+        practice: 'Completed activity; no proficiency credit',
+        sentence_complexity: 'Reviewed in feedback; not calibrated',
         correct: null,
       };
     }
@@ -111,6 +113,8 @@ export class AIService {
       vocabulary: 'Not assessed in mock',
       fluency: 'Not assessed from text',
       pronunciation: 'Not assessed',
+      practice: 'Completed activity; no proficiency credit',
+      sentence_complexity: 'Not assessed in mock',
       correct: mistake ? false : null,
     };
   }

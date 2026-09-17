@@ -1,3 +1,5 @@
+import { Coverage } from '../components/Coverage';
+import { localDay } from '../../shared/learning';
 import { useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { useApp } from '../hooks/useApp';
@@ -31,7 +33,7 @@ function ChildDashboard({ id }: { id: string }) {
         </div>
         <h1>{t('A week of growing confidence.', 'Тиждень упевненого зростання.')}</h1>
         <p>
-          {r.student} · {t('Last 7 days', 'Останні 7 днів')}
+          {r.student} · {r.period_start} — {r.period_end} · {r.timezone}
         </p>
         <div className="stat-strip">
           <div>
@@ -50,10 +52,14 @@ function ChildDashboard({ id }: { id: string }) {
             <strong>{s.title[lang]}</strong>
             <span>{s.mastery === null ? '—' : s.mastery + '%'}</span>
             <b>
-              {s.delta >= 0 ? '+' : ''}
-              {s.delta.toFixed(1)} {t('points', 'пунктів')}
+              {s.delta !== null && s.delta >= 0 ? '+' : ''}
+              {s.delta === null ? '—' : s.delta.toFixed(1)} {t('points', 'пунктів')}
             </b>
-            <small>{minutes(s.seconds)}</small>
+            <small>
+              {minutes(s.seconds)} · {s.comparable_skills}{' '}
+              {t('comparable skills', 'порівнюваних навичок')}
+            </small>
+            <Coverage subject={s} />
           </div>
         ))}
         <h2>{t('Strong foundations', 'Міцні основи')}</h2>
@@ -72,7 +78,7 @@ function ChildDashboard({ id }: { id: string }) {
         <h2>{t('Next week, one step at a time', 'Наступного тижня, крок за кроком')}</h2>
         <ul>
           {r.next.map((p) => (
-            <li key={p.subject}>
+            <li key={p.skill.id}>
               {p.skill.title[lang]} · {t('2 short sessions', '2 короткі заняття')}
             </li>
           ))}
@@ -86,7 +92,7 @@ function ChildDashboard({ id }: { id: string }) {
       </article>
     );
   const today = data.events.filter(
-    (e) => e.created_at.slice(0, 10) === new Date().toISOString().slice(0, 10),
+    (e) => localDay(e.created_at, data.profile.timezone) === data.today,
   );
   const detail = data.skills.find((s) => s.id === selected);
   return (
@@ -115,6 +121,21 @@ function ChildDashboard({ id }: { id: string }) {
           <Arrow />
         </Link>
       </div>
+      <section className="panel subject-manager">
+        <h2>{t('Learning subjects', 'Предмети навчання')}</h2>
+        {data.subjectSelections.map((s) => (
+          <div key={s.id}>
+            <strong>{s.title[lang]}</strong>
+            <span>
+              {s.active
+                ? t('Active', 'Активний')
+                : s.selection_status === 'paused'
+                  ? t('Paused', 'Призупинено')
+                  : t('Not selected', 'Не вивчається')}
+            </span>
+          </div>
+        ))}
+      </section>
       <Analytics data={data} />
       <div className="insight-columns">
         <section>
@@ -163,7 +184,11 @@ function ChildDashboard({ id }: { id: string }) {
           ))}
         </div>
         <KnowledgeGraph
-          skills={data.skills.filter((s) => s.subject_id === subject)}
+          skills={data.skills.filter(
+            (s) =>
+              s.subject_id ===
+              (data.subjects.some((s) => s.id === subject) ? subject : data.subjects[0]?.id),
+          )}
           selected={selected}
           onSelect={(s) => setSelected(s.id)}
         />

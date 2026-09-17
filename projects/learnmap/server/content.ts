@@ -1,3 +1,5 @@
+import { englishUnits, englishQuestion } from './english-content';
+import { conceptChecks } from './concept-content';
 export type LocalText = { en: string; uk: string };
 export const bi = (en: string, uk: string): LocalText => ({ en, uk });
 type SeedSkill = {
@@ -8,6 +10,7 @@ type SeedSkill = {
   pre: string[];
   score: number;
   explanation: LocalText;
+  strand?: string;
 };
 const s = (
   id: string,
@@ -213,7 +216,15 @@ export const seedSkills: SeedSkill[] = [
     ),
   ),
 ];
+seedSkills.push(
+  ...englishUnits.map((u) => ({
+    ...s(u.id, 'english', 'b1', u.title, u.uk, u.pre, 0, u.rule, u.rule),
+    strand: u.strand,
+  })),
+);
 export function sampleQuestion(id: string, n: number) {
+  const english = englishQuestion(id, n);
+  if (english) return english;
   const a = n + 2,
     b = n + 3;
   let en = '',
@@ -459,6 +470,13 @@ export function sampleQuestion(id: string, n: number) {
         wrong = row.slice(2);
       }
     }
+  }
+  if ((n === 3 || n === 6) && conceptChecks[id]) {
+    const row = conceptChecks[id][n === 3 ? 0 : 1];
+    en = row[0];
+    uk = 'Обери правильний варіант: ' + row[0];
+    right = row[1];
+    wrong = row.slice(2);
   }
   const options = [right, ...wrong];
   const rotate = n % 4;

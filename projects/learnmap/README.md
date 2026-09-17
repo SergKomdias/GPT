@@ -1,4 +1,4 @@
-# LearnMap 0.1
+# LearnMap 0.2
 
 **Your personal map of knowledge.** A working learning application for students and parents. All features are free; there are no payments, subscriptions, paywalls or locked analytics.
 
@@ -62,18 +62,19 @@ projects/learnmap/
 
 ## Implemented functionality
 
-- Email/password registration, login, logout, server sessions and Student/Parent/Admin authorization.
-- Minimal onboarding: nickname, age, grade, country, learning and interface language. English and Ukrainian UI.
-- Mathematics (15 skills), Physics (18 skills), English B1 (6 strands), 351 sample questions, stored prerequisite graph. Seed averages: Math 68%, Physics 54%; English strands 72/65/81/61/58/54.
-- Eight-question adaptive diagnostics: rising difficulty, prerequisite fallback, persisted responses and evidence. Unchecked skills stay unassessed.
-- Interactive knowledge graph with skill inspector, confidence, attempts, hints and review date.
-- Daily priority plan, updated from actual evidence: weak prerequisites, review dates, developing skills and new material.
-- Lessons: 2 review questions, explanation, 1 guided question, 3 independent questions, 2 mini-test questions, saved result. Five progressive hints; independent work has more weight.
-- Separate XP, learning level, streak and weekly goal. No invented activity history.
-- Speaking: three modes, scenarios/topics, microphone start/stop, 60-second bound, transcription review, typed fallback, feedback, voice reply, persisted dialogue and completion. Finishing a conversation counts one session; individual turns contribute evidence and time.
-- Listening: narrated passage, comprehension question, optional transcript counted as a hint, separate mastery.
-- Parent: multiple linked children, access checks, activity, actual time, subject/skill trends, strengths, gaps, recommendations, weekly report and print action. Dashboard refreshes every 15 seconds.
-- Admin: JSON editor for subjects, curricula/grades/CEFR, topics, skills/dependencies, question bank and prompts; user display-name editing and platform statistics. Dependency cycles are rejected. Role changes require server provisioning.
+- Student/Parent/Admin accounts, persistent server sessions, parent invitations and role authorization.
+- Onboarding selects one or more subjects, an IANA timezone and a daily learning goal. Subjects can be added, paused and resumed without deleting history or mastery.
+- Mathematics: 15 sample skills; Physics: 18; English B1: 6 strands and 26 subskills. There are 65 stored nodes and 585 questions (59 assessed leaf skills). Math/Physics include conceptual and error/transfer checks alongside calculations. English includes contextual choice, sentence completion and rule checks.
+- Mastery estimate, confidence and retention are separate. Positive growth is capped at 8 points per session and 12 per local day. Mastered/Strong require independent evidence and delayed successful checks, not just a high score.
+- Subject summaries show assessed/total skills, coverage and confidence. A subject percentage is withheld below 60% coverage or 35% mean assessed-skill confidence.
+- Diagnostics sample different graph branches and adapt difficulty. They finish at sufficient coverage/confidence or a 24-question safety limit; reaching the limit reports remaining uncertainty.
+- Today, map, progress and parent reports use active subjects only. The planner responds to prerequisites, review dates, weak skills and the daily minute goal; it does not force three sessions.
+- Nine-stage lessons retain answer/hint evidence; least-recently-tested questions rotate into lessons. Five hints progressively reduce positive credit; hint-assisted answers never count as independent evidence.
+- Speaking saves activity and qualitative dimensions (grammar, vocabulary, relevance, complexity). Neither word count nor completing a conversation changes proficiency. Pronunciation and acoustic fluency remain Not assessed.
+- Listening includes an audio passage task; English listening subskills explicitly describe text-based strategy checks, not an acoustic proficiency test.
+- Local-day plans/streaks and Monday-to-current-local-day weekly reports. Weekly change compares start/end estimates on the same assessed cohort; newly assessed skills are not silently inserted into the delta denominator.
+- Short database phases surround external AI calls. Duplicate concurrent speaking requests share one provider call in one server process and one persisted turn. Completed conversations are checked before and after provider work.
+- Parent summaries separate learning time, activity, estimates, confidence and coverage; inactive subjects have Paused/Not selected labels without zero-percent cards.
 
 ## What is real, what is mock
 
@@ -109,7 +110,7 @@ Copy `.env.example` to `.env` only if configuration is needed. Server variables:
 
 Never put a secret into `VITE_*` variables. To use live AI, configure the server variables and restart; the frontend does not change. Provider errors are surfaced instead of pretending to succeed. Requests use Responses (`store:false`), Audio Transcriptions and Speech endpoints. See [official audio reference](https://developers.openai.com/api/reference/typescript/resources/audio).
 
-`pnpm db:seed` initializes the schema/content idempotently. Restart preserves local users, sessions and learning history. Normal seed does not overwrite admin edits; the versioned distractor migration fixes initial sample content once. For remote PostgreSQL, the database must already exist and the configured role must be allowed to create/update the application schema. Remote PostgreSQL connectivity is implemented but was not available for verification here.
+`pnpm db:seed` initializes the schema/content idempotently. Restart preserves local users, sessions and learning history. Normal seed does not overwrite admin edits; versioned sample migrations update bundled questions once. The learning-v2 migration keeps existing learners’ subjects/history and lowers unsupported legacy confidence; it never invents retention evidence. For remote PostgreSQL, the database must already exist and the configured role must be allowed to create/update the application schema. Remote PostgreSQL connectivity is implemented but was not available for verification here.
 
 ## Verification
 
@@ -130,25 +131,21 @@ pnpm test:e2e
 
 Verification results, screenshot index and design comparison: [docs/QA.md](docs/QA.md).
 
-## Limitations
+## Limitations and pilot blockers
 
-- Sample content is a testing curriculum, not a full country/grade-aligned program. Grade selection is stored, but this release shares the grade-10/B1 sample across students. Several English reading/listening questions reuse a sample scenario.
-- Mastery/confidence use transparent heuristics, not a validated psychometric model. They need calibration with real learning evidence. Speaking mastery is conservative text-practice evidence, not a complete proficiency or pronunciation measurement.
-- Mock AI is intentionally limited. Live API credentials, model availability, voice quality and real-device microphone/audio playback still need an operator check. Browser voice availability varies.
-- The local database uses a serialized transaction queue for correctness; provider calls currently hold the transaction queue. Use background jobs and short transactions before concurrent family-scale deployment.
-- Weekly reports derive from the latest 500 events; historical archives and large-scale analytics require pagination/aggregation work.
-- No email verification, password recovery, account deletion/export UI, consent workflow or public hosting. Raw audio is not persisted, but transcripts remain in the learning database. Plan retention/consent operations before enrolling real children.
-- Admin editing is functional structured JSON, not a rich authoring studio. No self-service privilege changes or content deletion, which could invalidate learning history.
+- This is a limited testing curriculum, not a complete country/grade program. Some sample prompts/rationales remain in English even with Ukrainian navigation. Teacher review, better distractors and distinct transfer tasks are needed before a real-user pilot. Legacy strand-level questions remain for compatibility; diagnostics and coverage use subskills.
+- Mastery/confidence are transparent heuristics, not a calibrated psychometric or CEFR measurement. See [docs/PROGRESSION.md](docs/PROGRESSION.md). Free speaking cannot yet earn proficiency credit.
+- Real OpenAI calls, paid-account/model availability, external PostgreSQL and physical device audio have not been verified. Local/mock operation is verified.
+- Short transactions fix the provider-blocking problem. A multi-worker deployment still needs durable jobs, distributed provider deduplication, request quotas, timeouts/recovery and a load test. History shown in the UI is capped at 500; report aggregation reads the full history and needs database-side aggregation for larger datasets.
+- Consent, verified email/password recovery, retention/export/deletion, HTTPS hosting and backup/restore drills are still required before enrolling real children. No public deployment is included.
+- Legacy v0.1 evidence did not store confidence snapshots. New weekly comparisons are reliable from the v0.2 evidence boundary; older records are preserved rather than retroactively assigned fabricated confidence/retention.
 
-## Next 10 tasks, in priority order
+## Next steps
 
-1. Configure and validate a staging PostgreSQL database, backups and restore.
-2. Verify real OpenAI transcription, feedback and synthesis against live account access.
-3. Add consent, transcript retention, account export and deletion workflows.
-4. Add verified email, password reset and secure invitation management/revocation.
-5. Review sample questions with teachers; expand distinct reading/listening material.
-6. Add country/grade curricula and diagnostic coverage for all skills.
-7. Calibrate mastery/confidence and hint weights; track uncertainty and delayed retention.
-8. Shorten database transactions, queue AI work and test concurrent families.
-9. Test physical iOS/Android microphones, Safari, accessibility and voice playback.
-10. Deploy an HTTPS pilot for 20–50 families and measure retention, learning time and parent-report usage.
+1. Review and improve the focused Math/Physics/B1 content with teachers.
+2. Calibrate mastery, confidence, retention and diagnostic stopping thresholds on held-out learner evidence.
+3. Validate real text AI with spend controls before enabling voice charges.
+4. Add consent, account recovery and transcript retention/export/deletion workflows.
+5. Verify staging PostgreSQL, backup/restore, HTTPS, multi-worker concurrency and physical browser/device accessibility/audio.
+
+Returning to a previously well-assessed subject automatically uses a short diagnostic recheck (up to 12 questions); sparse subjects keep the full 24-question limit.

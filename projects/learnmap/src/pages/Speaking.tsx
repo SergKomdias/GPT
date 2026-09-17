@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Mic, Square, Volume2, Send, MessageCircle } from 'lucide-react';
 import { api, transcribe, speak, stopVoice } from '../services/api';
 import { useRecorder } from '../hooks/useRecorder';
@@ -22,6 +22,7 @@ export function Speaking() {
   const [example, setExample] = useState(false);
   const [autoVoice, setAutoVoice] = useState(true);
   const [started, setStarted] = useState(false);
+  const pendingTurn = useRef<{ text: string; requestId: string } | null>(null);
   useEffect(() => () => stopVoice(), []);
   const recorder = useRecorder(async (blob) => {
     setBusy(true);
@@ -36,9 +37,9 @@ export function Speaking() {
       setBusy(false);
     }
   });
-  const voice = async (text: string) => {
+  const voice = async (text: string, id = session?.id) => {
     try {
-      await speak(text);
+      await speak(text, id);
     } catch (e) {
       setError((e as Error).message);
     }
@@ -51,7 +52,7 @@ export function Speaking() {
       setSession(r);
       setTurns([{ reply: r.reply }]);
       setStarted(true);
-      if (autoVoice) void voice(r.reply);
+      if (autoVoice) void voice(r.reply, r.id);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -63,10 +64,10 @@ export function Speaking() {
     setBusy(true);
     setError('');
     try {
-      const r = await api(`/speaking/${session.id}/turn`, 'POST', {
-        text: draft,
-        requestId: crypto.randomUUID(),
-      });
+      if (pendingTurn.current?.text !== draft)
+        pendingTurn.current = { text: draft, requestId: crypto.randomUUID() };
+      const r = await api(`/speaking/${session.id}/turn`, 'POST', pendingTurn.current);
+      pendingTurn.current = null;
       setTurns((p) => [...p, r]);
       setDraft('');
       setExample(false);
@@ -204,19 +205,25 @@ export function Speaking() {
                       <p>{turn.feedback.explanation}</p>
                       <small>
                         {t(
-                          'Practice evidence saved · pronunciation unassessed',
-                          'Практику збережено · вимову не оцінено',
+                          'Activity saved · no proficiency credit · pronunciation unassessed',
+                          'Активність збережено · без зміни знань · вимову не оцінено',
                         )}
                       </small>
                       <details>
                         <summary>{t('Feedback details', 'Деталі аналізу')}</summary>
-                        {['relevance', 'grammar', 'vocabulary', 'fluency', 'pronunciation'].map(
-                          (k) => (
-                            <p key={k}>
-                              {k}: {turn.feedback[k]}
-                            </p>
-                          ),
-                        )}
+                        {[
+                          'practice',
+                          'relevance',
+                          'grammar',
+                          'vocabulary',
+                          'sentence_complexity',
+                          'fluency',
+                          'pronunciation',
+                        ].map((k) => (
+                          <p key={k}>
+                            {k}: {turn.feedback[k]}
+                          </p>
+                        ))}
                       </details>
                     </div>
                   ) : null}

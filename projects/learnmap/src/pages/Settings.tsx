@@ -30,7 +30,10 @@ export function Settings({ family = false }: { family?: boolean }) {
             </label>
             {user?.role === 'student' ? (
               <Link to="/onboarding" className="button secondary">
-                {t('Edit learning profile', 'Редагувати профіль навчання')}
+                {t(
+                  'Edit profile, subjects and timezone',
+                  'Редагувати профіль, предмети й часовий пояс',
+                )}
               </Link>
             ) : null}
             <p className="muted">

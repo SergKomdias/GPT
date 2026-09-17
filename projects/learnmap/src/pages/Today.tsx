@@ -1,3 +1,4 @@
+import { Coverage } from '../components/Coverage';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../hooks/useApp';
 import { useSnapshot } from '../hooks/useSnapshot';
@@ -57,9 +58,11 @@ export function Today() {
               <Link
                 className="button"
                 to={
-                  first.skill.confidence_score === 0
+                  first && first.skill.confidence_score === 0
                     ? '/diagnostic/' + first.subject
-                    : begin(first.skill.id)
+                    : first
+                      ? begin(first.skill.id)
+                      : '/subjects'
                 }
               >
                 {t('Start learning', 'Почати навчання')}
@@ -100,7 +103,7 @@ export function Today() {
                   to={
                     p.skill.confidence_score === 0 ? '/diagnostic/' + p.subject : begin(p.skill.id)
                   }
-                  key={p.subject}
+                  key={p.skill.id}
                   className="learning-row"
                 >
                   <span className="row-number">0{i + 1}</span>
@@ -158,6 +161,7 @@ export function Today() {
                   {s.id === 'english' ? <small> B1</small> : null}
                 </strong>
                 <MasteryBar value={s.mastery} />
+                <Coverage subject={s} />
               </div>
             </Link>
           ))}

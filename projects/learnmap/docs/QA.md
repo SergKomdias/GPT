@@ -1,81 +1,38 @@
-# LearnMap 0.1 — verification and handoff
+# LearnMap 0.2 QA
 
-## Environment
+## Scope and environment
 
-Verified on Windows with Node 24, React/Vite and disk-persisted PGlite. Interactive review used Codex's in-app browser at `http://127.0.0.1:5173`. Isolated Playwright/Edge tests used `http://127.0.0.1:5174`, their own API on 3101 and `.data/e2e`, with fictional test accounts only.
+Flow under test: register → choose active subjects/timezone → adaptive diagnostic → lesson → knowledge map/progress → add/pause/resume → linked-parent report. Separate fixtures cover recording, permissions, speaking completion and slow providers.
 
-The in-app browser was the primary visual/interaction tool. Headless Edge was additionally used for reproducible microphone permission/error fixtures and synthetic audio; those controls are not exposed by the in-app browser. No actual personal microphone recording was needed for automated testing.
+Browser plugin not available (no Browser skill listed). Used the existing Playwright/Edge workflow with synthetic audio and fictional accounts. API 3101, Vite 5174, isolated `.data/e2e`; unit/API tests use in-memory PostgreSQL/PGlite. Windows, Node 24, pnpm 11. No personal audio or external AI calls were used.
 
-Viewports checked: 390×844, 768×844, 1280×900, 1400×1000, and the concept's nominal 1505×1045. The in-app capture cropped the oversized native-width viewport to the host panel, so the final readable desktop capture uses 1400×1000. Full-page capture also produced excess blank canvas; final screenshots use viewport capture instead.
+## Verification
 
-## Results
+- TypeScript, ESLint and production build pass.
+- 40 unit/API/domain tests cover score caps, independent confidence, retention, status gates, diagnostic coverage and short rechecks, subject combinations, add/pause/resume, parent isolation, sparse coverage, local dates/DST, comparable weekly cohorts, completion checks and concurrency.
+- 6 Playwright scenarios pass: original learning/parent flow, synthetic audio/listening, permission denial/typed fallback, admin authorization, English-only subject management/mobile map, and Mathematics + Physics parent reporting.
+- Existing fixed-eight-question assertions were updated for the requested adaptive stopping behavior; original learning/auth/lesson/audio/admin assertions remain.
+- Curriculum validation checks all 585 questions have four distinct answer options and five hints, plus valid prerequisite references. This is structural validation, not independent teacher validation.
+- A blocked fake AI request allows another student's snapshot and subject update to finish. Concurrent identical turn IDs issue one feedback call and persist one turn. Ending a conversation during the provider call prevents its late write; ended conversations trigger no new feedback/transcription calls.
+- Score progression is reproduced against the database by `tests/progression.test.ts`; see [PROGRESSION.md](PROGRESSION.md).
 
-| Check | Result |
-| --- | --- |
-| TypeScript | PASS (`pnpm typecheck`, also part of build) |
-| ESLint | PASS |
-| Domain + PostgreSQL API tests | PASS — 16 tests |
-| Browser regression tests | PASS — 4 end-to-end tests |
-| Production build | PASS |
-| Page identity and nonempty rendering | PASS |
-| Framework error overlay | None on final load |
-| Console health | No errors/warnings after final clean reload; end-to-end main flow captures no page errors |
-| Responsive overflow | No document horizontal overflow at tested widths |
-| Microphone allowed | PASS with synthetic device: start → stop → example transcription |
-| Microphone denied | PASS: clear error → typed answer → saved feedback |
-| Live OpenAI / external PostgreSQL | Not exercised; no external credentials supplied |
-| Physical phone microphone / audible voice quality | Not verified; browser invocation and synthetic media verified |
+## Visual/interaction evidence
 
-## Interaction evidence
+Reviewed rendered screenshots with `view_image`: English-only Today has one subject/one initial diagnostic; no Math/Physics cards. English Map preserves six strand tabs and shows real prerequisite subskills. Parent selection rows distinguish Active and Not selected. Mobile subject controls wrap without horizontal document overflow. The graph intentionally scrolls horizontally inside its panel.
 
-1. Register fictional student → onboarding → eight adaptive questions → knowledge map → full nine-step lesson → stored result → student invitation → separately registered parent → same child results and weekly report.
-2. In-app demo lesson: 8/8 correct answers with one review hint. Quadratic-equation mastery changed **44 → 86**; Math subject average **68 → 71**; Today selected **Circles** next. A server restart preserved the result. The parent saw the same mastery and completed lesson.
-3. Speaking: synthetic microphone → explicit example transcript → confirm text → grammar feedback → follow-up question → finish conversation. Individual turns save evidence; completion counts one conversation. `I go to school yesterday.` produced `I went to school yesterday.` Pronunciation remains explicitly unassessed.
-4. Listening: voice request → stop → reveal transcript as hint → answer → separate listening mastery.
-5. Administration: edit prompt → save → confirmation. Student role is denied API and UI administration. Cyclic skill prerequisites are rejected.
+Screenshots (1280×900 desktop, 390×844 mobile):
 
-## Issues found and fixed
+- [English subjects](screenshots/v2-english-subjects.png)
+- [English-only Today](screenshots/v2-english-today.png)
+- [English Knowledge Map](screenshots/v2-english-map.png)
+- [Add/pause/resume mobile](screenshots/v2-subjects-mobile.png)
+- [Mathematics + Physics](screenshots/v2-math-physics.png)
+- [Parent subject selection](screenshots/v2-parent.png)
 
-- First startup failed when the database parent directory did not exist; initialization now creates it.
-- Several sample distractors duplicated an option; all 351 questions now pass uniqueness validation, and a one-time content migration fixes existing local seed rows.
-- Mobile Ukrainian navigation overflowed; compact nav sizing removes horizontal overflow.
-- Graph `role=img` hid its interactive labels from accessibility navigation; it now exposes a labeled group and skill buttons.
-- Speaking session counts originally counted every turn; explicit completion now counts one session, while turns retain practice evidence and elapsed time.
-- Tied transaction timestamps could reorder history; an event sequence now makes ordering deterministic.
-- Responsive snapshot heading wrapped awkwardly; medium desktop sizes stack its heading and link.
-- Temporary Vite hot-reload errors occurred during bulk source formatting. Final reload and isolated browser tests run without those errors.
-- Test fixture origin and admin locator mismatches were corrected; all final tests pass.
+The original concept's palette, sidebar, lime Today panel and graph treatment are retained. Added selection controls and confidence/coverage labels intentionally change information density. No new design concept or pixel-identical claim is made. Earlier v0.1 screenshots remain historical; their inflated mastery example is not the current algorithm.
 
-## Design comparison
+## Issues resolved and remaining limits
 
-Reference: [concept.png](concept.png), generated with built-in ImageGen before coding. Final implementation and the concept were opened with `view_image` for direct comparison.
+Fixed duplicate choices in sentence-completion fixtures, an asynchronous diagnostic-test race after early completion, a multi-element parent assertion, and deterministic evidence ordering for tied timestamps. Final tests show no page errors in the exercised flows; framework output contained only benign Node NO_COLOR/FORCE_COLOR warnings.
 
-| Comparison point | Verification / intentional difference |
-| --- | --- |
-| Layout | Sidebar + greeting + lime plan panel + ruled learning rows + graph + subject summary retained |
-| Palette | Cool pale canvas, white surfaces, forest controls, lime panel, muted amber learning nodes retained |
-| Typography | Sans hierarchy, large greeting, two-line plan title, restrained chrome; breakpoint sizes adjusted for legibility |
-| Graph | Real SVG nodes, dependencies and accessible controls replace illustrative graph data |
-| Icons | Connected-node mark and graph navigation, consistent outline subject icons; no bitmap UI |
-| Containers | Open rows and restrained graph panel; no repeated dashboard card grid |
-| Responsive | Single-column mobile, accessible compact navigation, horizontally scrollable graph; conversation settings collapse while speaking |
-| Copy | Core greeting, plan copy, CTA and nav preserved. Actual planner topics, metrics, Ukrainian labels and explicit mock notice intentionally supersede example content |
-
-Above-the-fold copy audit: intentional differences are live learner results, prerequisite-aware Physics choice, a parent **connection** action instead of entering another role's private dashboard, and disclosure of the demo AI adapter. English shows both B1 sample level and separate numerical mastery. No pricing, premium labels, locked features or fabricated learning history were introduced.
-
-The implementation was visually verified against the concept for layout, palette, typography, icons, graph treatment and spacing. It preserves the concept's design language, with the functional and responsive adaptations listed above; it is not claimed to be pixel-identical across viewport sizes.
-
-## Screenshots
-
-- [Today — desktop](screenshots/today-desktop.png)
-- [Today — Ukrainian mobile](screenshots/today-mobile-uk.png)
-- [Knowledge Map](screenshots/knowledge-map.png)
-- [Lesson and progressive hint](screenshots/lesson.png)
-- [Speaking — desktop](screenshots/speaking-desktop.png)
-- [Speaking — mobile](screenshots/speaking-mobile.png)
-- [Parent dashboard](screenshots/parent-dashboard.png)
-- [Weekly report](screenshots/weekly-report.png)
-- [Curriculum editor](screenshots/admin-editor.png)
-- [Login](screenshots/login.png)
-
-The development server remains available on loopback. For environment setup, limitations and the next ten priorities, see [README.md](../README.md).
+Not verified: live OpenAI/model access, external PostgreSQL, real device microphones/Safari, audible voice quality, multi-process deduplication, large-history performance, or real-user pedagogy. Content contains deliberately small/reused contexts and some English-only rationale. Teacher review, calibration, consent/data lifecycle, recovery, backups and deployment/device QA remain pilot blockers. See README.md.
