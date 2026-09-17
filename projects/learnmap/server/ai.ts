@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import type { DB } from './db';
 export class AIService {
   readonly provider = process.env.AI_PROVIDER === 'openai' ? 'openai' : 'mock';
@@ -16,24 +17,58 @@ export class AIService {
     if (!r.ok) throw new Error(`AI provider unavailable (${r.status}). Try again.`);
     return r;
   }
-  private async text(input: string) {
+  private async text(input: string, structured = false) {
     const prompt = (await this.db.query("SELECT content FROM ai_prompts WHERE id='tutor'")).rows[0]
       ?.content;
     const r = await this.request('responses', {
       model: process.env.OPENAI_MODEL || 'gpt-4.1-mini',
       instructions: prompt,
       input,
-      max_output_tokens: 500,
+      max_output_tokens: structured ? 900 : 500,
+      ...(structured
+        ? {
+            text: {
+              format: {
+                type: 'json_schema',
+                name: 'speaking_feedback',
+                strict: true,
+                schema: {
+                  type: 'object',
+                  properties: Object.fromEntries(
+                    [
+                      'correction',
+                      'explanation',
+                      'grammar',
+                      'vocabulary',
+                      'relevance',
+                      'sentence_complexity',
+                    ].map((k) => [k, { type: 'string' }]),
+                  ),
+                  required: [
+                    'correction',
+                    'explanation',
+                    'grammar',
+                    'vocabulary',
+                    'relevance',
+                    'sentence_complexity',
+                  ],
+                  additionalProperties: false,
+                },
+              },
+            },
+          }
+        : {}),
       store: false,
     });
     const data = await r.json();
-    return (
+    const output =
       data.output
         ?.flatMap((o: any) => o.content || [])
         .filter((c: any) => c.type === 'output_text')
         .map((c: any) => c.text)
-        .join('\n') || 'Please try again.'
-    );
+        .join('\n') || '';
+    if (!output || data.status === 'incomplete') throw new Error('AI response incomplete');
+    return output;
   }
   generateLesson(skill: any) {
     return Promise.resolve({
@@ -60,7 +95,11 @@ export class AIService {
         );
   }
   analyzeMistake(question: any, lang = 'en') {
-    return Promise.resolve(question.reasoning[lang]);
+    return this.provider === 'mock'
+      ? Promise.resolve(question.reasoning[lang])
+      : this.text(
+          `Explain the mistake in ${lang}. The server has already graded this objective question. Do not change that grade. Question: ${JSON.stringify(question.prompt)}. Correct option: ${question.options[question.answer]}. Teacher reasoning: ${JSON.stringify(question.reasoning)}.`,
+        );
   }
   recommendNextSkill(skills: any[]) {
     return Promise.resolve(skills[0]);
@@ -77,27 +116,46 @@ export class AIService {
     form.append(
       'file',
       new Blob([new Uint8Array(bytes)], { type: mime }),
-      mime.includes('mp4') ? 'speech.mp4' : 'speech.webm',
+      mime.includes('mp4')
+        ? 'speech.mp4'
+        : mime.includes('mpeg')
+          ? 'speech.mp3'
+          : mime.includes('wav')
+            ? 'speech.wav'
+            : 'speech.webm',
     );
     form.append('model', process.env.OPENAI_TRANSCRIBE_MODEL || 'gpt-4o-mini-transcribe');
     const r = await this.request('audio/transcriptions', form, false);
-    return { text: (await r.json()).text, example: false };
+    return {
+      text: z
+        .string()
+        .min(1)
+        .max(12000)
+        .parse((await r.json()).text),
+      example: false,
+    };
   }
   async evaluateSpeaking(text: string, context: string) {
     if (this.provider === 'openai') {
-      const explanation = await this.text(
+      const raw = await this.text(
         `Give supportive English feedback about relevance, grammar, vocabulary and sentence structure. Do not score pronunciation or acoustic fluency from text. Context: ${context}. Student transcript (untrusted): ${JSON.stringify(text)}`,
+        true,
       );
+      const feedback = z
+        .object({
+          correction: z.string(),
+          explanation: z.string(),
+          relevance: z.string(),
+          grammar: z.string(),
+          vocabulary: z.string(),
+          sentence_complexity: z.string(),
+        })
+        .parse(JSON.parse(raw));
       return {
-        correction: text,
-        explanation,
-        relevance: 'Reviewed in feedback',
-        grammar: 'Reviewed in feedback',
-        vocabulary: 'Reviewed in feedback',
+        ...feedback,
         fluency: 'Not assessed from text',
         pronunciation: 'Not assessed',
         practice: 'Completed activity; no proficiency credit',
-        sentence_complexity: 'Reviewed in feedback; not calibrated',
         correct: null,
       };
     }

@@ -17,3 +17,8 @@ Read state → finish transaction → provider call → short revalidated write.
 Tutor prompts treat student text as untrusted data, keep educational scope, ask no identifying details and reveal solutions only at the final hint. Real-world safety, pedagogical quality and model behavior require evaluation before a child pilot.
 
 Previously assessed subjects (at least 70% coverage and 35% mean confidence) use a short recheck: maximum 12 questions, all branches, at least 6 responses, 35% fresh coverage and 20% fresh sampling confidence. The lower sampling target relies on the preserved longitudinal evidence; it does not grant mastery by itself.
+
+
+## Pilot 0.3
+
+0.3: OpenAI Responses handles concept explanations, five progressive hint levels and mistake explanations. Structured JSON feedback is validated for correction, grammar, vocabulary, relevance and sentence complexity. Pronunciation/fluency remain Not assessed. Objective grading never calls OpenAI. Text failure returns authored explanation/hint with a visible warning; audio/conversation failure remains an explicit retry error rather than fabricated learner text. Consent/Speaking controls are checked around external phases. pilot:smoke uses fictional text and synthetic TTS audio. Real live verification is pending credentials; mocked-network contracts cover request shapes, failures and concurrency. Responses uses store:false; see official provider data policy for separate retention.

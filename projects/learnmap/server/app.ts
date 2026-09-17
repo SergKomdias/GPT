@@ -18,6 +18,8 @@ import {
 } from './domain';
 import { validTimezone } from '../shared/learning';
 import { AIService } from './ai';
+import { pilotRoutes } from './pilot-routes';
+import { pilotMode, requireLearning, track, trackSubjects, privacy } from './pilot';
 const credentials = z.object({
   email: z.string().email().max(200),
   password: z.string().min(10).max(128),
@@ -32,12 +34,25 @@ export function createApp(db: DB, provider?: AIService) {
   const ai = provider || new AIService(db);
   const tx = <T>(fn: () => Promise<T>) => transaction(db, fn);
   app.disable('x-powered-by');
+  if (process.env.TRUST_PROXY === '1') app.set('trust proxy', 1);
+  app.get('/health', async (_req, res) => {
+    try {
+      await db.query('SELECT 1');
+      res.json({ status: 'ok', version: '0.3.0' });
+    } catch {
+      res.status(503).json({ status: 'unavailable' });
+    }
+  });
   app.use((req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
+    if (process.env.NODE_ENV === 'production')
+      res.setHeader('Strict-Transport-Security', 'max-age=31536000');
     res.setHeader('Referrer-Policy', 'same-origin');
     if (req.path.startsWith('/api')) res.setHeader('Cache-Control', 'no-store');
     if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) && req.headers.origin) {
       const origin = new URL(req.headers.origin);
+      if (process.env.NODE_ENV === 'production' && req.headers.origin !== process.env.APP_ORIGIN)
+        return res.status(403).json({ error: 'Origin rejected' });
       if (
         origin.host !== req.headers.host &&
         ![process.env.APP_ORIGIN || 'http://127.0.0.1:5173', 'http://localhost:5173'].includes(
@@ -80,16 +95,46 @@ export function createApp(db: DB, provider?: AIService) {
           return res;
         };
         try {
-          if (external) await fn(req, res);
-          else await tx(() => fn(req, res));
+          const learning = /^\/api\/(lesson|diagnostic|speaking|listening|voice)(\/|$)/.test(path);
+          const guard = async () => {
+            if (learning && res.locals.user?.role === 'student')
+              await requireLearning(
+                db,
+                res.locals.user.id,
+                path.includes('speaking') || (path === '/api/voice' && !!req.body.sessionId),
+              );
+          };
+          const perform = async () => {
+            await guard();
+            await fn(req, res);
+          };
+          if (external) await perform();
+          else await tx(perform);
+          if (learning && res.locals.user?.role === 'student') await guard();
+          if (payload?.mistakeQuestion) {
+            try {
+              const explanation = await ai.analyzeMistake(payload.mistakeQuestion, langOf(req));
+              payload.feedback.reasoning = {
+                ...payload.feedback.reasoning,
+                [langOf(req)]: explanation,
+              };
+            } catch {
+              payload.providerWarning = 'AI unavailable; showing authored mistake explanation';
+            }
+            delete payload.mistakeQuestion;
+          }
+          await recordRoute(path, req, res, payload);
           // Explanation generation happens after the lesson state has committed.
           if (payload?.stage === 'Explain')
             try {
+              await guard();
               payload.explanation = await ai.explainConcept(payload.skill, langOf(req));
+              await guard();
             } catch {
               payload.providerWarning =
                 'AI unavailable; showing the authored explanation / AI недоступний; показано підготовлене пояснення';
             }
+          await guard();
         } catch (e) {
           res.json = send;
           throw e;
@@ -100,9 +145,79 @@ export function createApp(db: DB, provider?: AIService) {
       run().catch(next);
     });
   };
+
+  async function recordRoute(path: string, req: any, res: any, p: any) {
+    if (!p) return;
+    const user = res.locals.user?.id || p.id;
+    if (!user) return;
+    if (path === '/api/auth/login' || path === '/api/auth/register') {
+      await track(db, user, 'login');
+      return;
+    }
+    const session = p.id || req.params.id;
+    let event: string | undefined,
+      subject: string | null = null,
+      seconds = 0,
+      key = session;
+    if (path === '/api/diagnostic') {
+      event = 'diagnostic_started';
+      subject = req.body.subject;
+    }
+    if (path === '/api/diagnostic/:id/answer' && p.completed) event = 'diagnostic_completed';
+    if (path === '/api/lesson') {
+      event = 'lesson_started';
+      subject = p.skill.subject_id;
+    }
+    if (path === '/api/lesson/:id/next' && p.completed) {
+      event = 'lesson_completed';
+      seconds = p.result.seconds;
+      subject = p.skill.subject_id;
+    }
+    if (path === '/api/lesson/:id/hint') {
+      event = 'hint_used';
+      key = session + ':' + req.body.index + ':' + p.level;
+    }
+    if (path === '/api/speaking') {
+      event = 'speaking_started';
+      subject = 'english';
+    }
+    if (path === '/api/speaking/:id/end') {
+      event = 'speaking_completed';
+      subject = 'english';
+      seconds = Number(
+        (
+          await db.query(
+            'SELECT coalesce(sum(seconds),0) seconds FROM learning_events WHERE session_id=$1',
+            [session],
+          )
+        ).rows[0].seconds,
+      );
+    }
+    if (path === '/api/listening/:id/answer') {
+      event = 'listening_completed';
+      subject = 'english';
+      seconds = p.seconds;
+    }
+    if (event) {
+      if (!subject && path.includes('diagnostic'))
+        subject = (
+          await db.query('SELECT subject_id FROM diagnostic_sessions WHERE id=$1', [session])
+        ).rows[0]?.subject_id;
+      if (!subject && path.includes('lesson'))
+        subject = (
+          await db.query(
+            'SELECT s.subject_id FROM lesson_sessions l JOIN skills s ON s.id=l.skill_id WHERE l.id=$1',
+            [session],
+          )
+        ).rows[0]?.subject_id;
+      await track(db, user, event, subject, session, key, seconds);
+    }
+  }
   route('get', '/api/config', async (_req: any, res: any) =>
     res.json({
       ai: ai.provider,
+      pilot: pilotMode(),
+      invite_required: !!process.env.PILOT_INVITE_CODE,
       demo: process.env.ENABLE_DEMO !== 'false',
       database: process.env.DATABASE_URL ? 'PostgreSQL' : 'PGlite PostgreSQL',
     }),
@@ -111,6 +226,12 @@ export function createApp(db: DB, provider?: AIService) {
     const data = credentials
       .extend({ name: z.string().trim().min(1).max(60), role: z.enum(['student', 'parent']) })
       .parse(req.body);
+    if (
+      pilotMode() &&
+      process.env.PILOT_INVITE_CODE &&
+      hashToken(String(req.body.invite_code || '')) !== hashToken(process.env.PILOT_INVITE_CODE)
+    )
+      fail('Valid pilot invitation required', 403);
     const email = data.email.toLowerCase();
     if ((await db.query('SELECT id FROM users WHERE email=$1', [email])).rows.length)
       fail('Email is already registered / Email вже зареєстровано');
@@ -157,7 +278,7 @@ export function createApp(db: DB, provider?: AIService) {
           u.id,
         ])
       ).rows.map((r) => r.subject_id);
-    res.json({ ...u, profile: p });
+    res.json({ ...u, profile: p, privacy: u.role === 'student' ? await privacy(db, u.id) : null });
   });
   route('post', '/api/logout', authenticated, async (req: any, res: any) => {
     const token = req.headers.cookie
@@ -187,7 +308,13 @@ export function createApp(db: DB, provider?: AIService) {
       })
       .parse(req.body);
     await db.query('UPDATE users SET name=$2 WHERE id=$1', [res.locals.user.id, d.name]);
+    const beforeSubjects = (
+      await db.query('SELECT subject_id FROM student_subjects WHERE student_id=$1 AND active', [
+        res.locals.user.id,
+      ])
+    ).rows.map((r) => r.subject_id);
     await selectSubjects(db, res.locals.user.id, d.subjects);
+    await trackSubjects(db, res.locals.user.id, beforeSubjects);
     await db.query('UPDATE student_profiles SET timezone=$2,daily_minutes=$3 WHERE student_id=$1', [
       res.locals.user.id,
       d.timezone,
@@ -205,7 +332,13 @@ export function createApp(db: DB, provider?: AIService) {
       .min(1)
       .max(3)
       .parse(req.body.subjects);
+    const beforeSubjects = (
+      await db.query('SELECT subject_id FROM student_subjects WHERE student_id=$1 AND active', [
+        res.locals.user.id,
+      ])
+    ).rows.map((r) => r.subject_id);
     await selectSubjects(db, res.locals.user.id, ids);
+    await trackSubjects(db, res.locals.user.id, beforeSubjects);
     res.json({ ok: true });
   });
   async function allowedStudent(res: any, id?: string) {
@@ -276,6 +409,8 @@ export function createApp(db: DB, provider?: AIService) {
   async function question(id: string) {
     const q = (await db.query('SELECT * FROM questions WHERE id=$1', [id])).rows[0];
     if (!q) fail('Question not found', 404);
+    if (pilotMode() && q.review_status !== 'approved')
+      fail('This question awaits teacher approval', 409);
     return q;
   }
   async function owned(table: string, id: string, user: string) {
@@ -290,7 +425,9 @@ export function createApp(db: DB, provider?: AIService) {
     const all = (await skillsFor(db, res.locals.user.id)).filter((s) => s.subject_id === subject);
     const qs = (
       await db.query(
-        'SELECT q.* FROM questions q JOIN skills s ON s.id=q.skill_id WHERE s.subject_id=$1 ORDER BY s.sort_order,q.difficulty,q.id',
+        'SELECT q.* FROM questions q JOIN skills s ON s.id=q.skill_id WHERE s.subject_id=$1 ' +
+          (pilotMode() ? "AND q.review_status='approved' AND s.review_status='approved' " : '') +
+          'ORDER BY s.sort_order,q.difficulty,q.id',
         [subject],
       )
     ).rows;
@@ -303,6 +440,7 @@ export function createApp(db: DB, provider?: AIService) {
       recheck: baseline.coverage >= 0.7 && baseline.confidence >= 0.35,
     };
     const q = chooseDiagnostic(qs, all, state)!;
+    if (!q) fail('No approved diagnostic content is available yet', 409);
     state.current = q.id;
     state.started = Date.now();
     const id = randomUUID();
@@ -357,7 +495,9 @@ export function createApp(db: DB, provider?: AIService) {
       );
       const qs = (
         await db.query(
-          'SELECT q.* FROM questions q JOIN skills s ON s.id=q.skill_id WHERE s.subject_id=$1 ORDER BY s.sort_order,q.difficulty,q.id',
+          'SELECT q.* FROM questions q JOIN skills s ON s.id=q.skill_id WHERE s.subject_id=$1 ' +
+            (pilotMode() ? "AND q.review_status='approved' AND s.review_status='approved' " : '') +
+            'ORDER BY s.sort_order,q.difficulty,q.id',
           [session.subject_id],
         )
       ).rows;
@@ -414,10 +554,14 @@ export function createApp(db: DB, provider?: AIService) {
     const skillId = z.string().parse(req.body.skill);
     const skill = (await skillsFor(db, res.locals.user.id)).find((s) => s.id === skillId);
     if (!skill) fail('Unknown skill');
+    if (pilotMode() && skill.review_status !== 'approved')
+      fail('This skill awaits teacher approval', 409);
     await requireActive(db, res.locals.user.id, skill.subject_id);
     const qs = (
       await db.query(
-        'SELECT q.id FROM questions q LEFT JOIN skill_evidence e ON e.question_id=q.id AND e.student_id=$2 WHERE q.skill_id=$1 GROUP BY q.id,q.difficulty ORDER BY max(e.created_at) ASC NULLS FIRST,q.difficulty,q.id',
+        'SELECT q.id FROM questions q LEFT JOIN skill_evidence e ON e.question_id=q.id AND e.student_id=$2 WHERE q.skill_id=$1 ' +
+          (pilotMode() ? "AND q.review_status='approved' " : '') +
+          'GROUP BY q.id,q.difficulty ORDER BY max(e.created_at) ASC NULLS FIRST,q.difficulty,q.id',
         [skillId, res.locals.user.id],
       )
     ).rows;
@@ -425,11 +569,14 @@ export function createApp(db: DB, provider?: AIService) {
     const review = skill.prerequisites[0]
       ? (
           await db.query(
-            'SELECT id FROM questions WHERE skill_id=$1 ORDER BY difficulty,id LIMIT 2',
+            'SELECT id FROM questions WHERE skill_id=$1 ' +
+              (pilotMode() ? "AND review_status='approved' " : '') +
+              'ORDER BY difficulty,id LIMIT 2',
             [skill.prerequisites[0]],
           )
         ).rows
       : qs.slice(0, 2);
+    if (review.length < 2) fail('Prerequisite questions await teacher approval', 409);
     const questions = [...review.map((q) => q.id), null, ...qs.slice(2, 8).map((q) => q.id)];
     const id = randomUUID();
     const state = {
@@ -465,9 +612,16 @@ export function createApp(db: DB, provider?: AIService) {
           fail('No active question');
         return { session, q: await question(session.state.questions[session.state.index]) };
       });
-      const level = Math.min(5, read.session.state.hints + 1),
+      const level = Math.min(5, read.session.state.hints + 1);
+      let hint, providerWarning;
+      try {
         hint = await ai.generateHint(read.q, level, langOf(req));
+      } catch {
+        hint = read.q.hints[level - 1][langOf(req)];
+        providerWarning = 'AI unavailable; showing authored hint';
+      }
       await tx(async () => {
+        await requireLearning(db, res.locals.user.id);
         const fresh = await owned('lesson_sessions', req.params.id, res.locals.user.id);
         if (
           fresh.completed ||
@@ -481,7 +635,7 @@ export function createApp(db: DB, provider?: AIService) {
           JSON.stringify(fresh.state),
         ]);
       });
-      res.json({ hint, level });
+      res.json({ hint, level, providerWarning });
     },
   );
   route(
@@ -500,7 +654,8 @@ export function createApp(db: DB, provider?: AIService) {
       );
       const state = session.state;
       if (req.body.index !== state.index) fail('Step already submitted', 409);
-      let feedback = null;
+      let feedback = null,
+        mistakeQuestion = null;
       if (state.index !== 2) {
         const answer = z.number().int().min(0).max(3).parse(req.body.answer);
         const q = await question(state.questions[state.index]);
@@ -514,6 +669,7 @@ export function createApp(db: DB, provider?: AIService) {
           state.hints,
         ]);
         feedback = { correct, reasoning: q.reasoning };
+        if (!correct) mistakeQuestion = q;
       }
       state.index++;
       state.hints = 0;
@@ -566,6 +722,7 @@ export function createApp(db: DB, provider?: AIService) {
       res.json({
         ...(await lessonView({ ...session, state, completed: state.index === 9 }, langOf(req))),
         feedback,
+        mistakeQuestion,
       });
     },
   );
@@ -588,10 +745,14 @@ export function createApp(db: DB, provider?: AIService) {
         topic: z.string().min(1).max(80),
       })
       .parse(req.body);
-    await tx(() => requireActive(db, res.locals.user.id, 'english'));
+    await tx(async () => {
+      await requireLearning(db, res.locals.user.id, true);
+      await requireActive(db, res.locals.user.id, 'english');
+    });
     const reply = await ai.generateConversationReply('', d.mode + ': ' + d.topic),
       id = randomUUID();
     await tx(async () => {
+      await requireLearning(db, res.locals.user.id, true);
       await requireActive(db, res.locals.user.id, 'english');
       await db.query(
         'INSERT INTO speaking_sessions(id,student_id,mode,topic) VALUES($1,$2,$3,$4)',
@@ -618,6 +779,7 @@ export function createApp(db: DB, provider?: AIService) {
           const cached = await tx(async () => {
             const session = await owned('speaking_sessions', req.params.id, res.locals.user.id);
             if (session.completed) fail('This conversation has ended');
+            await requireLearning(db, res.locals.user.id, true);
             await requireActive(db, res.locals.user.id, 'english');
             return (
               await db.query(
@@ -632,6 +794,7 @@ export function createApp(db: DB, provider?: AIService) {
           await tx(async () => {
             const fresh = await owned('speaking_sessions', req.params.id, res.locals.user.id);
             if (fresh.completed) fail('This conversation has ended');
+            await requireLearning(db, res.locals.user.id, true);
             await requireActive(db, res.locals.user.id, 'english');
             await db.query(
               'INSERT INTO audio_records_metadata(id,session_id,bytes,mime) VALUES($1,$2,$3,$4)',
@@ -670,6 +833,7 @@ export function createApp(db: DB, provider?: AIService) {
               ).rows[0];
               if (previous) return { previous };
               if (session.completed) fail('This conversation has ended');
+              await requireLearning(db, res.locals.user.id, true);
               await requireActive(db, res.locals.user.id, 'english');
               const history = (
                 await db.query(
@@ -686,11 +850,13 @@ export function createApp(db: DB, provider?: AIService) {
               read.session.topic +
               '. Previous turns: ' +
               JSON.stringify(read.history!.reverse());
-            const feedback = await ai.evaluateSpeaking(d.text, context),
-              reply = await ai.generateConversationReply(d.text, context);
+            const feedback = await ai.evaluateSpeaking(d.text, context);
+            await requireLearning(db, res.locals.user.id, true);
+            const reply = await ai.generateConversationReply(d.text, context);
             return tx(async () => {
               const session = await owned('speaking_sessions', req.params.id, res.locals.user.id);
               if (session.completed) fail('This conversation has ended');
+              await requireLearning(db, res.locals.user.id, true);
               await requireActive(db, res.locals.user.id, 'english');
               const previous = (
                 await db.query('SELECT * FROM speaking_turns WHERE id=$1 AND session_id=$2', [
@@ -783,21 +949,37 @@ export function createApp(db: DB, provider?: AIService) {
   route('post', '/api/voice', authenticated, async (req: any, res: any) => {
     const text = z.string().min(1).max(3000).parse(req.body.text);
     await tx(async () => {
-      if (res.locals.user.role === 'student')
+      if (res.locals.user.role === 'student') {
+        await requireLearning(db, res.locals.user.id, !!req.body.sessionId);
         await requireActive(db, res.locals.user.id, 'english');
+      }
       if (req.body.sessionId) {
         const session = await owned('speaking_sessions', req.body.sessionId, res.locals.user.id);
         if (session.completed) fail('This conversation has ended');
       }
     });
     const audio = await ai.synthesizeSpeech(text);
+    if (res.locals.user.role === 'student')
+      await requireLearning(db, res.locals.user.id, !!req.body.sessionId);
+    if (
+      req.body.sessionId &&
+      (await owned('speaking_sessions', req.body.sessionId, res.locals.user.id)).completed
+    )
+      fail('This conversation has ended');
     if (!audio) return res.json({ browserVoice: true, text });
     res.type('audio/mpeg').send(audio);
   });
   const passage =
     'Last Saturday, Sam visited a science museum with a friend. They travelled by train and arrived at ten. The robotics exhibition was their favourite part. After lunch, they joined a workshop and built a small solar-powered car.';
   route('get', '/api/listening', authenticated, role('student'), async (_req: any, res: any) => {
+    await requireLearning(db, res.locals.user.id, false);
     await requireActive(db, res.locals.user.id, 'english');
+    if (
+      pilotMode() &&
+      !(await db.query("SELECT 1 FROM skills WHERE id='listening' AND review_status='approved'"))
+        .rows.length
+    )
+      fail('Listening content awaits teacher approval', 409);
     const id = randomUUID();
     await db.query(
       "INSERT INTO lesson_sessions(id,student_id,skill_id,state) VALUES($1,$2,'listening',$3)",
@@ -821,6 +1003,7 @@ export function createApp(db: DB, provider?: AIService) {
     async (req: any, res: any) => {
       const s = await owned('lesson_sessions', req.params.id, res.locals.user.id);
       if (s.state.kind !== 'listening' || s.completed) fail('Invalid session');
+      await requireLearning(db, res.locals.user.id, false);
       await requireActive(db, res.locals.user.id, 'english');
       s.state.hint = 1;
       await db.query('UPDATE lesson_sessions SET state=$2 WHERE id=$1', [
@@ -838,6 +1021,7 @@ export function createApp(db: DB, provider?: AIService) {
     async (req: any, res: any) => {
       const s = await owned('lesson_sessions', req.params.id, res.locals.user.id);
       if (s.state.kind !== 'listening' || s.completed) fail('Already completed');
+      await requireLearning(db, res.locals.user.id, false);
       await requireActive(db, res.locals.user.id, 'english');
       const answer = z.number().int().min(0).max(3).parse(req.body.answer);
       const change = await evidence(
@@ -852,7 +1036,11 @@ export function createApp(db: DB, provider?: AIService) {
         'museum-workshop',
       );
       await db.query('UPDATE lesson_sessions SET completed=true WHERE id=$1', [s.id]);
-      res.json({ correct: answer === 0, change });
+      res.json({
+        correct: answer === 0,
+        change,
+        seconds: Math.min(600, Math.max(1, Math.round((Date.now() - s.state.started) / 1000))),
+      });
     },
   );
   route('get', '/api/admin', authenticated, role('admin'), async (_req: any, res: any) =>
@@ -904,6 +1092,7 @@ export function createApp(db: DB, provider?: AIService) {
         d.sort_order,
       ],
     );
+    await db.query("UPDATE skills SET review_status='draft' WHERE id=$1", [d.id]);
     await db.query('DELETE FROM skill_dependencies WHERE skill_id=$1', [d.id]);
     for (const p of d.prerequisites)
       await db.query('INSERT INTO skill_dependencies VALUES($1,$2)', [d.id, p]);
@@ -935,6 +1124,7 @@ export function createApp(db: DB, provider?: AIService) {
         JSON.stringify(d.hints),
       ],
     );
+    await db.query("UPDATE questions SET review_status='draft' WHERE id=$1", [d.id]);
     await db.query('INSERT INTO diagnostic_questions VALUES($1) ON CONFLICT DO NOTHING', [d.id]);
     res.json({ ok: true });
   });
@@ -997,6 +1187,7 @@ export function createApp(db: DB, provider?: AIService) {
     await db.query("UPDATE ai_prompts SET content=$1 WHERE id='tutor'", [content]);
     res.json({ ok: true });
   });
+  pilotRoutes(app, db);
   app.use('/api', (_req, res) => res.status(404).json({ error: 'Endpoint not found' }));
   app.use(express.static(resolve('dist')));
   app.get('/{*path}', (_req, res) => res.sendFile(resolve('dist/index.html')));

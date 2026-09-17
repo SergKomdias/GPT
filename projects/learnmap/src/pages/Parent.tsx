@@ -1,3 +1,4 @@
+import { PrivacyControls, PilotFeedback } from '../components/Pilot';
 import { Coverage } from '../components/Coverage';
 import { localDay } from '../../shared/learning';
 import { useState, useEffect } from 'react';
@@ -208,11 +209,21 @@ function ChildDashboard({ id }: { id: string }) {
 }
 export function Parent() {
   const { t } = useApp();
+  const location = useLocation();
   const [children, setChildren] = useState<any[]>([]);
   const [child, setChild] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [code, setCode] = useState('');
+  useEffect(() => {
+    if (child)
+      void api('/telemetry/view', 'POST', {
+        student: child,
+        event: location.pathname.endsWith('report')
+          ? 'weekly_report_viewed'
+          : 'parent_dashboard_viewed',
+      }).catch(() => {});
+  }, [child, location.pathname]);
   const load = async () => {
     try {
       const c = await api('/children');
@@ -280,6 +291,10 @@ export function Parent() {
           <button className="button">{t('Link child', 'Прив’язати дитину')}</button>
         </form>
       </details>
+      {child && <PrivacyControls key={child + '-privacy'} student={child} />}
+      {child && (
+        <PilotFeedback key={child + location.pathname} screen="parent_report" context={child} />
+      )}
       {loading ? (
         <Loading />
       ) : child ? (

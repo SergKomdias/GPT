@@ -1,3 +1,4 @@
+import { PilotFeedback } from '../components/Pilot';
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Lightbulb, Check } from 'lucide-react';
@@ -38,6 +39,7 @@ export function Lesson() {
         index: state.index,
         lang: learningLang,
       });
+      if (result.providerWarning) setError(result.providerWarning);
       if (result.feedback) {
         setFeedback(result.feedback);
         setPending(result);
@@ -63,6 +65,7 @@ export function Lesson() {
       {!state && !error ? <Loading /> : null}
       {state?.completed ? (
         <div className="panel result narrow">
+          <PilotFeedback screen="lesson" context={state.id} />
           <div className="result-symbol">
             <Check />
           </div>
@@ -163,6 +166,7 @@ export function Lesson() {
                         lang: learningLang,
                       });
                       setHint(r.hint);
+                      if (r.providerWarning) setError(r.providerWarning);
                       setState({ ...state, hints: r.level });
                     } catch (e) {
                       setError((e as Error).message);

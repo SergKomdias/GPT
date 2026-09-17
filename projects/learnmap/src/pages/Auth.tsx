@@ -139,6 +139,12 @@ export function Auth() {
               />
             </label>
             <Notice error>{error}</Notice>
+            {register && config.invite_required && (
+              <label>
+                {t('Pilot invite code', 'Код запрошення пілоту')}
+                <input name="invite_code" required autoComplete="off" />
+              </label>
+            )}
             <button className="button full" disabled={busy}>
               {register ? t('Create account', 'Створити акаунт') : t('Sign in', 'Увійти')}
               <Arrow />

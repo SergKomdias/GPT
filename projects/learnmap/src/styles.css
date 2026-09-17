@@ -2626,3 +2626,40 @@ blockquote {
 .subject-summary {
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
+
+.pilot-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+  margin: 24px 0;
+}
+.pilot-metrics strong {
+  display: block;
+  font-size: 24px;
+}
+.form-panel input[type='checkbox'] {
+  width: auto;
+  margin-right: 10px;
+}
+.panel table {
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+}
+.panel td,
+.panel th {
+  padding: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.form-panel label.pilot-speaking-toggle {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+.form-panel .pilot-speaking-toggle input[type='checkbox'] {
+  width: 18px;
+  flex: 0 0 18px;
+  margin: 0;
+}

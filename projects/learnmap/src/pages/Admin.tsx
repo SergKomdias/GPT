@@ -1,3 +1,4 @@
+import { PilotMetrics } from '../components/Pilot';
 import { useEffect, useState } from 'react';
 import { useApp } from '../hooks/useApp';
 import { api } from '../services/api';
@@ -106,6 +107,7 @@ export function Admin() {
           'Програми, завдання й поведінка викладача — в одному місці.',
         )}
       />
+      <PilotMetrics />
       <Notice error>{error}</Notice>
       {!data ? (
         <Loading />
@@ -177,12 +179,36 @@ export function Admin() {
                       item.prompt?.[lang] ||
                       item.id}
                   </strong>
-                  <small>{item.id}</small>
+                  <small>
+                    {item.id} {item.review_status ? '· ' + item.review_status : ''}
+                  </small>
                 </button>
               ))}
             </section>
             <section className="panel admin-editor">
               <h2>{t('Content editor', 'Редактор матеріалів')}</h2>
+              {selected && selected !== 'new' && ['skills', 'questions'].includes(tab) && (
+                <label>
+                  Review status
+                  <select
+                    aria-label="Review status"
+                    value={data[tab].find((i: any) => i.id === selected)?.review_status || 'draft'}
+                    onChange={(e) =>
+                      void api('/admin/review', 'PUT', {
+                        kind: tab,
+                        id: selected,
+                        status: e.target.value,
+                      })
+                        .then(load)
+                        .catch((e) => setError(e.message))
+                    }
+                  >
+                    {['draft', 'reviewed', 'approved'].map((s) => (
+                      <option key={s}>{s}</option>
+                    ))}
+                  </select>
+                </label>
+              )}
               <p>
                 {t(
                   'Edit the structured content below. Both language versions are required. Skill dependencies are validated for cycles. Question answers use positions 0–3.',

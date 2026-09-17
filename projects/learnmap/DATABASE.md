@@ -17,3 +17,8 @@ The learning-v2 seed migration updates the bundled sample questions once, adds s
 daily_plans uses the student’s local date. weekly_reports uses their local Monday. UI history returns up to 500 events; analytics computes over all relevant history. Before/after weekly estimates use the same skills with evidence at both boundaries; newly assessed skills affect coverage, not a misleading gain.
 
 Foreign keys, unique constraints and ownership checks remain active. External PostgreSQL connection setup, encrypted transport, backup/restore, long-history aggregation and multi-worker load behavior still require staging verification.
+
+
+## Pilot 0.3
+
+Pilot migration: skills/questions.review_status defaults draft; pilot_consent stores current guardian/version/grant/Speaking permission/timestamps; consent_history records each change. pilot_events stores fixed event names, user/subject/session IDs, dedupe keys and bounded seconds (no text/IP/email). pilot_feedback stores screen, context and rating. Both expire after 90 days. Transcript cleanup covers speaking_turns, cached transcriptions and metadata, closes sessions and redacts topic text. Explicit dependency-ordered account deletion and ON DELETE CASCADE remove learning/telemetry data. Schema and seed execute transactionally; startup is single-instance. Backup restoration must replay subsequent deletion/withdrawal requests.

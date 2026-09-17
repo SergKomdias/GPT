@@ -8,3 +8,7 @@ dist/
 *.key
 test-results/
 playwright-report/
+
+*.dump
+*.sql.gz
+.env.production

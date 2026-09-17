@@ -1,3 +1,4 @@
+import { PrivacyControls } from '../components/Pilot';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../hooks/useApp';
@@ -95,6 +96,7 @@ export function Settings({ family = false }: { family?: boolean }) {
         ) : null}
         <Notice error>{error}</Notice>
       </section>
+      {!family && <PrivacyControls />}
     </div>
   );
 }

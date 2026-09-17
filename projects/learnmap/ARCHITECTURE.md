@@ -17,3 +17,8 @@ Knowledge score, confidence and retention are separate. Evidence stores before/a
 Security remains server-side: HttpOnly SameSite sessions, salted scrypt hashes, ownership checks, expiring parent invitations, bounded bodies, origin validation and admin role gates. No real credentials or local data belong in Git. The UI has no direct database access.
 
 See DATABASE.md for migration details, AI_TUTOR.md for evidence rules and docs/QA.md for validation and remaining pilot limitations.
+
+
+## Pilot 0.3
+
+Pilot 0.3 adds server/pilot.ts (consent guards, retention, deletion/export and fixed telemetry), pilot-routes.ts (authorized controls), config.ts (production startup validation), and src/components/Pilot.tsx (existing-style family/admin panels). Consent is rechecked before provider calls and before returning/writing results. Objective grading remains server-side. Short DB phases and per-process speaking single-flight remain; one app instance is required for alpha. See DEPLOYMENT.md and PILOT.md.

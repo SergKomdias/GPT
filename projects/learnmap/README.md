@@ -1,10 +1,16 @@
-# LearnMap 0.2
+# LearnMap 0.3 — Pilot
 
 **Your personal map of knowledge.** A working learning application for students and parents. All features are free; there are no payments, subscriptions, paywalls or locked analytics.
 
+## Pilot status
+
+The 0.3 implementation adds parental consent/withdrawal, a separate Speaking permission, account export/deletion, transcript retention, internal aggregate metrics, optional feedback and content approval gates. **Hosting is deferred by the owner. Live OpenAI verification is pending server credentials.** Local and mocked-network tests do not establish live-provider readiness.
+
+See [PILOT.md](PILOT.md) for the first-family guide and readiness checklist, [DEPLOYMENT.md](DEPLOYMENT.md) for HTTPS/PostgreSQL/backup configuration, and [QA.md](QA.md) for verification status. In pilot mode, draft content is blocked until a teacher approves it; no content was automatically declared approved.
+
 ## Run locally
 
-Requires Node.js 22+ and pnpm 10+. From this directory:
+Requires Node.js 24 and pnpm 11.19+. From this directory:
 
 ```sh
 pnpm install
@@ -24,7 +30,7 @@ pnpm build
 pnpm start
 ```
 
-Open http://127.0.0.1:3100 after stopping any existing dev API. `pnpm start` serves both API and built frontend. For deployment behind HTTPS set `NODE_ENV=production`, `APP_ORIGIN` to the exact public origin, provision an administrator using server environment variables, and disable demo mode. Hosting/deployment was not performed.
+Open http://127.0.0.1:3100 after stopping any existing dev API. `pnpm start` serves both API and built frontend. For deployment behind HTTPS set `NODE_ENV=production`, `APP_ORIGIN` to the exact public origin, provision an administrator using server environment variables, and disable demo mode. Hosting/deployment was not performed; use the dedicated deployment runbook.
 
 ## Project structure
 
@@ -137,7 +143,7 @@ Verification results, screenshot index and design comparison: [docs/QA.md](docs/
 - Mastery/confidence are transparent heuristics, not a calibrated psychometric or CEFR measurement. See [docs/PROGRESSION.md](docs/PROGRESSION.md). Free speaking cannot yet earn proficiency credit.
 - Real OpenAI calls, paid-account/model availability, external PostgreSQL and physical device audio have not been verified. Local/mock operation is verified.
 - Short transactions fix the provider-blocking problem. A multi-worker deployment still needs durable jobs, distributed provider deduplication, request quotas, timeouts/recovery and a load test. History shown in the UI is capped at 500; report aggregation reads the full history and needs database-side aggregation for larger datasets.
-- Consent, verified email/password recovery, retention/export/deletion, HTTPS hosting and backup/restore drills are still required before enrolling real children. No public deployment is included.
+- Consent and live-database retention/export/deletion controls are implemented. Guardian verification, email/password recovery, HTTPS hosting and backup/restore drills still require operator preparation. No public deployment is included.
 - Legacy v0.1 evidence did not store confidence snapshots. New weekly comparisons are reliable from the v0.2 evidence boundary; older records are preserved rather than retroactively assigned fabricated confidence/retention.
 
 ## Next steps

@@ -15,3 +15,8 @@ The student and parent see mastery estimate, confidence, assessed/total and cove
 Weekly reports use the student’s local Monday through today, not a UTC rolling window. They show actual learning time, completed activity and start/end change on a comparable skill cohort. Unselected subjects are never labelled weak or zero.
 
 Pilot remains blocked by content/measurement validation, live-provider/staging checks, consent and data lifecycle, recovery, backup/restore and deployment/device QA. Existing parent ownership and role controls remain in place.
+
+
+## Pilot 0.3
+
+0.3 target: invited alpha with 3–5 students, no new subjects or redesign. Consent before learning, separate parent-controlled Speaking, privacy exports/deletion, draft/reviewed/approved content, internal aggregate admin metrics and optional feedback after three lessons. PILOT_MODE does not introduce premium/payments. Conversation remains activity; Speaking Assessment is planned/unavailable. See PILOT.md for operational gates and known limitations.

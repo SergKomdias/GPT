@@ -22,7 +22,15 @@ export async function createDB(path = process.env.DATA_DIR || '.data/learnmap'):
     if (path !== 'memory://') await mkdir(dirname(path), { recursive: true });
     db = new PGlite(path) as unknown as DB;
   }
-  await db.exec(await readFile(new URL('./schema.sql', import.meta.url), 'utf8'));
+  await db.exec('BEGIN');
+  try {
+    await db.exec(await readFile(new URL('./schema.sql', import.meta.url), 'utf8'));
+    await db.exec('COMMIT');
+  } catch (e) {
+    await db.exec('ROLLBACK');
+    await db.close();
+    throw e;
+  }
   return guarded(db);
 }
 const transactions = new WeakMap<DB, <T>(fn: () => Promise<T>) => Promise<T>>();

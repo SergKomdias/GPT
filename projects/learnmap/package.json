@@ -1,6 +1,6 @@
 {
   "name": "learnmap",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,7 +11,10 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "db:seed": "tsx server/seed-cli.ts"
+    "db:seed": "tsx server/seed-cli.ts",
+    "pilot:smoke": "tsx server/live-smoke.ts",
+    "db:migrate": "tsx server/seed-cli.ts",
+    "privacy:purge": "tsx server/purge-cli.ts"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.3.14",

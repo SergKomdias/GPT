@@ -155,6 +155,10 @@ export function Speaking() {
               {t('Finish conversation', 'Завершити розмову')}
             </button>
           ) : null}
+          <p>
+            Conversation = practice activity. Speaking Assessment — planned, unavailable in 0.3. No
+            pronunciation score.
+          </p>
           <div className="privacy-note">
             {t(
               'Audio is processed temporarily and is not stored. Voice responses are synthesized. Pronunciation is not scored from text.',

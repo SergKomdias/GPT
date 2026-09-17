@@ -35,6 +35,16 @@ export function Today() {
           </div>
         </div>
       </Heading>
+      {user?.privacy?.pilot && !user.privacy.granted && (
+        <Notice>
+          <Link to="/settings">
+            {t(
+              'Parent consent is required before learning. Open Settings to invite a parent.',
+              'Перед навчанням потрібна згода батьків. Відкрий налаштування й запроси батьків.',
+            )}
+          </Link>
+        </Notice>
+      )}
       <div className="today-grid">
         <div>
           <section className="plan-hero">

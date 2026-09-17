@@ -1,11 +1,5 @@
-# LearnMap current state
+# Current state — LearnMap 0.3 Pilot
 
-Version 0.2 replaces single-session mastery inflation with independent/confidence/retention gates, adds active subject selection and English subskills, adaptive diagnostic stopping, local-calendar reporting and short AI database phases.
+Pilot consent/withdrawal, parent-controlled Speaking, privacy export/deletion, retention cleanup, fixed first-party telemetry, admin aggregates, optional feedback and content approval are implemented. Existing subjects and design remain. Deterministic objective grading is unchanged.
 
-Important files: shared/learning.ts, server/learning.ts, server/db.ts, server/app.ts, server/schema.sql, server/seed.ts, server/english-content.ts, server/concept-content.ts, the updated onboarding/subjects/map/analytics screens and tests/learning-v2.test.ts.
-
-Verification and artifacts: [QA.md](QA.md), [PROGRESSION.md](PROGRESSION.md). Build, lint, typecheck, 40 unit/API tests and 6 browser scenarios are the release checks.
-
-Known limits: calibrated knowledge measurement, teacher-reviewed content/localization, live API/external PostgreSQL, durable distributed provider jobs, child consent/data lifecycle, recovery, backups, HTTPS deployment and physical device QA remain unfinished.
-
-Recommended next step: review the sample question bank and measurement thresholds with teachers before a small real-user pilot; verify real text AI with usage controls separately.
+Local QA: 61 unit/API/contract tests and 9 browser scenarios pass, plus build/lint/typecheck. Real OpenAI verification awaits a server key. Hosting is deferred by the owner; external PostgreSQL and backup/restore are not verified. This is an alpha candidate with operational gates, not a deployed pilot. See ../PILOT.md and QA-PILOT.md.

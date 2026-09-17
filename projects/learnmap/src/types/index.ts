@@ -5,6 +5,7 @@ export interface User {
   name: string;
   email: string;
   role: 'student' | 'parent' | 'admin';
+  privacy?: { pilot: boolean; granted: boolean; allow_speaking: boolean };
   profile?: {
     onboarded: boolean;
     grade: number;
