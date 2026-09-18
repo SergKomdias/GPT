@@ -2,7 +2,7 @@
 
 **Your personal map of knowledge.** A working learning application for students and parents. All features are free; there are no payments, subscriptions, paywalls or locked analytics.
 
-**Для учеников и родителей:** [описание LearnMap, возможности и первые шаги](PRODUCT.md). Здесь объяснены карта знаний, занятия, родительский кабинет, показатели прогресса, подключение семьи и ограничения пилота.
+**Для учнів і батьків:** [опис LearnMap, можливості та перші кроки](PRODUCT.md). Тут пояснено карту знань, заняття, батьківський кабінет, показники поступу, підключення сім’ї та обмеження пілота. Основна мова продукту й описів для користувачів — українська.
 
 ## Pilot status
 
