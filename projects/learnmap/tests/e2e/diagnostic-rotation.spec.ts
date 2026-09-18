@@ -28,3 +28,9 @@ test('displayed option preserves server answer index and a repeat diagnostic pic
   await page.goto('/progress');
   await expect(page.getByText('Evidence strength', { exact: false }).first()).toBeVisible();
 });
+
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    if (!localStorage.getItem('learnmap-language')) localStorage.setItem('learnmap-language', 'en');
+  });
+});

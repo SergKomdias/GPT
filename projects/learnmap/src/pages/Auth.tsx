@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { Logo, Notice, Arrow, Loading } from '../components/UI';
 import { useApp } from '../hooks/useApp';
 import { api } from '../services/api';
@@ -64,11 +64,11 @@ export function Auth() {
           </h1>
           <p>{t('Your personal map of knowledge.', 'Твоя персональна карта знань.')}</p>
           <div className="story-graph">
-            <span>Arithmetic</span>
+            <span>{t('Arithmetic', 'Арифметика')}</span>
             <i />
-            <span>Algebra</span>
+            <span>{t('Algebra', 'Алгебра')}</span>
             <i />
-            <span className="active">Your next step</span>
+            <span className="active">{t('Your next step', 'Твій наступний крок')}</span>
           </div>
           <p className="auth-description">
             {t(
@@ -77,7 +77,7 @@ export function Auth() {
             )}
           </p>
         </div>
-        <small>Mathematics · Physics · English</small>
+        <small>{t('Mathematics · Physics · English', 'Математика · Фізика · Англійська')}</small>
       </section>
       <section className="auth-form">
         <select
@@ -123,7 +123,7 @@ export function Auth() {
               </>
             ) : null}
             <label>
-              Email
+              {t('Email', 'Електронна пошта')}
               <input type="email" name="email" autoComplete="email" required />
             </label>
             <label>
@@ -170,10 +170,13 @@ export function Auth() {
           ) : null}
           <small className="muted">
             {t(
-              'All learning and parent features are free in version 0.1.',
-              'У версії 0.1 усе навчання й батьківські функції безкоштовні.',
+              'All learning and parent features are free in the 0.3 pilot.',
+              'У пілоті 0.3 усе навчання й батьківські функції безкоштовні.',
             )}
           </small>
+          <p>
+            <Link to="/about">{t('About LearnMap', 'Про LearnMap')}</Link>
+          </p>
         </div>
       </section>
     </div>

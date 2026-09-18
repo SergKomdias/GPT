@@ -55,7 +55,10 @@ export function Onboarding() {
                   )
                 }
               />
-              {['Mathematics', 'Physics', 'English'][i]}
+              {t(
+                ['Mathematics', 'Physics', 'English'][i],
+                ['Математика', 'Фізика', 'Англійська'][i],
+              )}
             </label>
           ))}
           <small>
@@ -109,7 +112,7 @@ export function Onboarding() {
             {t('Learning language', 'Мова навчання')}
             <select
               name="learning_language"
-              defaultValue={user?.profile?.learning_language || lang}
+              defaultValue={user?.profile?.onboarded ? user.profile.learning_language : lang}
             >
               <option value="en">English</option>
               <option value="uk">Українська</option>

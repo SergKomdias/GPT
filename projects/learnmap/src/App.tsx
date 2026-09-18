@@ -15,6 +15,7 @@ import { Progress } from './pages/Progress';
 import { Parent } from './pages/Parent';
 import { Settings } from './pages/Settings';
 import { Admin } from './pages/Admin';
+import { About } from './pages/About';
 function Protected() {
   const { user, loading } = useApp();
   return loading ? <Loading /> : user ? <Shell /> : <Navigate to="/" replace />;
@@ -30,6 +31,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Auth />} />
+          <Route path="/about" element={<About />} />
           <Route element={<Protected />}>
             <Route path="onboarding" element={student(<Onboarding />)} />
             <Route path="today" element={student(<Today />)} />

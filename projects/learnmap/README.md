@@ -4,6 +4,8 @@
 
 **Для учнів і батьків:** [опис LearnMap, можливості та перші кроки](PRODUCT.md). Тут пояснено карту знань, заняття, батьківський кабінет, показники поступу, підключення сім’ї та обмеження пілота. Основна мова продукту й описів для користувачів — українська.
 
+У застосунку цей опис доступний у розділі **«Про LearnMap»** (`/about`): зі сторінки входу та меню кабінетів учня й батьків. Українська — початкова мова інтерфейсу; збережений ручний вибір англійської залишається чинним.
+
 ## Pilot status
 
 The 0.3 implementation adds parental consent/withdrawal, a separate Speaking permission, account export/deletion, transcript retention, internal aggregate metrics, optional feedback and content approval gates. **Hosting is deferred by the owner. Live OpenAI synthetic smoke passed on 2026-09-18; see docs/LIVE-OPENAI.md.** Local and mocked-network tests do not establish live-provider readiness.

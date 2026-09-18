@@ -2663,3 +2663,66 @@ blockquote {
   flex: 0 0 18px;
   margin: 0;
 }
+
+.about-content {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.about-section {
+  padding: 24px;
+  margin-bottom: 22px;
+  scroll-margin-top: 24px;
+  line-height: 1.65;
+}
+.about-section h2 {
+  margin-top: 0;
+}
+.about-section dt {
+  font-weight: 650;
+  color: var(--green);
+}
+.about-section dd {
+  margin: 4px 0 18px;
+}
+.about-section li {
+  margin-bottom: 12px;
+}
+.about-audiences {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+.about-jumps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+}
+.about-jumps a {
+  color: var(--green);
+  text-decoration: underline;
+}
+.about-public {
+  max-width: 1160px;
+  padding: 24px;
+  margin: auto;
+}
+.about-public > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 36px;
+}
+@media (max-width: 800px) {
+  .about-audiences {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .about-public {
+    padding: 16px;
+  }
+  .about-section {
+    padding: 18px;
+  }
+}

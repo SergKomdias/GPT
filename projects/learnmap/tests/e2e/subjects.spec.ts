@@ -65,6 +65,7 @@ test('Mathematics + Physics show only selected subjects and honest parent summar
   const context = await browser.newContext({ baseURL: new URL(page.url()).origin }),
     parent = await context.newPage();
   await parent.goto('/');
+  await parent.getByLabel('Interface language').selectOption('en');
   await parent.getByRole('button', { name: 'Create account', exact: true }).click();
   await parent.getByLabel('Name or nickname').fill('Parent subject QA');
   await parent.getByLabel('I am a').selectOption('parent');
@@ -81,4 +82,10 @@ test('Mathematics + Physics show only selected subjects and honest parent summar
   );
   await parent.screenshot({ path: 'docs/screenshots/v2-parent.png' });
   await context.close();
+});
+
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    if (!localStorage.getItem('learnmap-language')) localStorage.setItem('learnmap-language', 'en');
+  });
 });

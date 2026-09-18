@@ -9,10 +9,11 @@ import {
   LogOut,
   Shield,
   Globe,
+  Info,
 } from 'lucide-react';
 import { Logo } from './UI';
 import { useApp } from '../hooks/useApp';
-export function Shell() {
+export function Shell({ children }: { children?: React.ReactNode }) {
   const { user, t, lang, setLang, logout, config } = useApp();
   const path = useLocation().pathname;
   const links =
@@ -48,6 +49,10 @@ export function Shell() {
           })}
         </nav>
         <div className="sidebar-bottom">
+          <NavLink to="/about">
+            <Info size={21} />
+            <span>{t('About LearnMap', 'Про LearnMap')}</span>
+          </NavLink>
           {user?.role === 'student' ? (
             <NavLink to="/family" aria-label={t('Parent connection', 'Зв’язок із батьками')}>
               <Users size={21} />
@@ -89,7 +94,9 @@ export function Shell() {
         <header className="topbar">
           <span>
             {t('Workspace', 'Мій простір')} <i>/</i>{' '}
-            {String(links.find((l) => l[0] === path)?.[2] || t('Learning', 'Навчання'))}
+            {path === '/about'
+              ? t('About LearnMap', 'Про LearnMap')
+              : String(links.find((l) => l[0] === path)?.[2] || t('Learning', 'Навчання'))}
           </span>
           <div className="top-actions">
             <Globe size={17} />
@@ -111,9 +118,7 @@ export function Shell() {
             </span>
           </div>
         </header>
-        <main>
-          <Outlet />
-        </main>
+        <main>{children ?? <Outlet />}</main>
         <footer>
           <span>
             {t(
@@ -123,7 +128,7 @@ export function Shell() {
           </span>
           <small>
             {config.ai === 'mock' ? t('AI: demo adapter', 'AI: демоадаптер') : 'AI: OpenAI'} ·
-            LearnMap 0.1
+            LearnMap 0.3
           </small>
         </footer>
       </div>

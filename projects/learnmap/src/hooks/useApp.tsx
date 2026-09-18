@@ -16,9 +16,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [lang, setLanguage] = useState<Language>(() =>
-    localStorage.getItem('learnmap-language') === 'uk' ? 'uk' : 'en',
+    localStorage.getItem('learnmap-language') === 'en' ? 'en' : 'uk',
   );
   const [config, setConfig] = useState({ ai: 'mock', demo: false });
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.title =
+      lang === 'uk'
+        ? 'LearnMap — Твоя персональна карта знань'
+        : 'LearnMap — Your personal map of knowledge';
+  }, [lang]);
   const refresh = useCallback(async () => {
     try {
       const u = await api<User>('/me');

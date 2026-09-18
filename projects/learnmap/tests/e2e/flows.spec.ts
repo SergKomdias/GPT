@@ -52,6 +52,7 @@ test('registration, onboarding, diagnostic, lesson, linked parent, and responsiv
   const ctx = await browser.newContext({ baseURL: new URL(page.url()).origin });
   const parent = await ctx.newPage();
   await parent.goto('/');
+  await parent.getByLabel('Interface language').selectOption('en');
   await parent.getByRole('button', { name: 'Create account', exact: true }).click();
   await parent.getByLabel('Name or nickname').fill('QA Fictional Parent');
   await parent.getByLabel('I am a').selectOption('parent');
@@ -153,4 +154,10 @@ test('admin can update content and student cannot enter the editor', async ({ pa
   await expect(page).toHaveURL(/\/today$/);
   await page.goto('/admin');
   await expect(page).toHaveURL(/\/today$/);
+});
+
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    if (!localStorage.getItem('learnmap-language')) localStorage.setItem('learnmap-language', 'en');
+  });
 });

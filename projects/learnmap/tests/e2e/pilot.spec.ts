@@ -74,3 +74,9 @@ test('privacy account deletion requires password and ends the authenticated sess
   await page.getByRole('button', { name: 'Delete account', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Welcome to LearnMap.' })).toBeVisible();
 });
+
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    if (!localStorage.getItem('learnmap-language')) localStorage.setItem('learnmap-language', 'en');
+  });
+});
