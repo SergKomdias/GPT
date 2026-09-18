@@ -111,7 +111,7 @@ test('synthetic microphone recording, transcription, feedback, finish and listen
   await page
     .getByRole('button', { name: 'Show transcript (counts as a hint)', exact: true })
     .click();
-  await page.getByRole('radio', { name: 'A A solar-powered car', exact: true }).check();
+  await page.getByRole('radio', { name: /^[A-D] A solar-powered car$/ }).check();
   await page.getByRole('button', { name: 'Check answer', exact: true }).click();
   await expect(page.getByText(/Correct! Listening mastery updated/)).toBeVisible();
 });

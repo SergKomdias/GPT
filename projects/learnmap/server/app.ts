@@ -433,6 +433,12 @@ export function createApp(db: DB, provider?: AIService) {
     ).rows;
     const baseline = subjectSummary(all);
     const state: any = {
+      previous: (
+        await db.query(
+          'SELECT DISTINCT question_id FROM diagnostic_answers a JOIN diagnostic_sessions d ON d.id=a.session_id WHERE d.student_id=$1 AND d.subject_id=$2',
+          [res.locals.user.id, subject],
+        )
+      ).rows.map((r) => r.question_id),
       asked: [],
       skill: all[0].id,
       difficulty: 1,

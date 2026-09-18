@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useApp } from '../../hooks/useApp';
 export function Question({
   question,
@@ -11,11 +12,19 @@ export function Question({
   disabled?: boolean;
 }) {
   const { lang } = useApp();
+  const order = useMemo(() => {
+    const indices = question.options.map((_: string, i: number) => i);
+    for (let i = indices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [indices[i], indices[j]] = [indices[j], indices[i]];
+    }
+    return indices;
+  }, [question.id, question.options.length]);
   return (
     <fieldset className="question">
       <legend>{question.prompt[lang]}</legend>
       <div className="answer-options">
-        {question.options.map((option: string, i: number) => (
+        {order.map((i: number, position: number) => (
           <label key={i} className={value === i ? 'selected' : ''}>
             <input
               type="radio"
@@ -24,8 +33,8 @@ export function Question({
               onChange={() => onChange(i)}
               disabled={disabled}
             />
-            <span className="answer-letter">{String.fromCharCode(65 + i)}</span>
-            <span>{option}</span>
+            <span className="answer-letter">{String.fromCharCode(65 + position)}</span>
+            <span>{question.options[i]}</span>
           </label>
         ))}
       </div>

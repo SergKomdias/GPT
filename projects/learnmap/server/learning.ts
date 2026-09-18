@@ -439,6 +439,10 @@ export function chooseDiagnostic(questions: any[], skills: any[], state: any, co
   if (unseenBranch.length) candidates = unseenBranch;
   else if (prerequisite) candidates = [prerequisite];
   candidates.sort((a, b) => count(a.id) - count(b.id));
+  const freshSkills = candidates.filter((s) =>
+    remaining.some((q) => q.skill_id === s.id && !(state.previous || []).includes(q.id)),
+  );
+  if (freshSkills.length) candidates = freshSkills;
   const skill = candidates[0];
   const difficulty =
     skill.id === state.skill
@@ -446,11 +450,10 @@ export function chooseDiagnostic(questions: any[], skills: any[], state: any, co
       : count(skill.id)
         ? 2
         : 1;
-  return (
-    remaining.find((q) => q.skill_id === skill.id && q.difficulty === difficulty) ||
-    remaining.find((q) => q.skill_id === skill.id) ||
-    remaining[0]
-  );
+  const forSkill = remaining.filter((q) => q.skill_id === skill.id);
+  const fresh = forSkill.filter((q) => !(state.previous || []).includes(q.id));
+  const pool = fresh.length ? fresh : forSkill;
+  return pool.find((q) => q.difficulty === difficulty) || pool[0] || remaining[0];
 }
 export const publicQuestion = (q: any) => ({
   id: q.id,
