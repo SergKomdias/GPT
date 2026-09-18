@@ -1,6 +1,6 @@
 # LearnMap 0.3 deployment runbook
 
-Hosting is deferred by the owner. No staging/production URL or external PostgreSQL has been verified. The Docker/Caddy configuration is a deployable starting point, not a claim of a deployed service. Docker is not installed in the verification environment, so image build and certificate issuance remain staging checks.
+Deployment preparation has resumed. No staging/production URL or external PostgreSQL has been verified. A proposed Render configuration is in `render.yaml`; see [українська інструкція розгортання](deploy/RENDER.uk.md). Account access and paid resources are not provisioned. The Docker/Caddy configuration remains an alternative starting point. Docker is not installed in the verification environment, so image build and certificate issuance remain staging checks.
 
 ## One-process alpha deployment
 

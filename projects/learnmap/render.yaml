@@ -1,0 +1,48 @@
+# Optional paid Render deployment. Review costs before applying.
+# Provision Render Postgres first; use its External Database URL below.
+services:
+  - type: web
+    name: learnmap-pilot
+    runtime: docker
+    region: frankfurt
+    plan: 0.5c-512mb
+    branch: main
+    dockerfilePath: ./projects/learnmap/Dockerfile
+    dockerContext: ./projects/learnmap
+    dockerCommand: >-
+      sh -c 'export APP_ORIGIN="${APP_ORIGIN:-$RENDER_EXTERNAL_URL}"; exec node --import tsx server/index.ts'
+    numInstances: 1
+    autoDeployTrigger: off
+    healthCheckPath: /health
+    maxShutdownDelaySeconds: 60
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: '3100'
+      - key: TRUST_PROXY
+        value: '1'
+      - key: ENABLE_DEMO
+        value: 'false'
+      - key: PILOT_MODE
+        value: 'true'
+      - key: AI_PROVIDER
+        value: openai
+      - key: PGSSLMODE
+        value: verify-full
+      - key: SPEAKING_RETENTION_DAYS
+        value: '30'
+      - key: PILOT_TIMEZONE
+        value: Europe/Kyiv
+      - key: DATABASE_URL
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: PILOT_INVITE_CODE
+        generateValue: true
