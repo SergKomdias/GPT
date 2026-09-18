@@ -2,6 +2,8 @@
 
 **Your personal map of knowledge.** A working learning application for students and parents. All features are free; there are no payments, subscriptions, paywalls or locked analytics.
 
+**Для учеников и родителей:** [описание LearnMap, возможности и первые шаги](PRODUCT.md). Здесь объяснены карта знаний, занятия, родительский кабинет, показатели прогресса, подключение семьи и ограничения пилота.
+
 ## Pilot status
 
 The 0.3 implementation adds parental consent/withdrawal, a separate Speaking permission, account export/deletion, transcript retention, internal aggregate metrics, optional feedback and content approval gates. **Hosting is deferred by the owner. Live OpenAI synthetic smoke passed on 2026-09-18; see docs/LIVE-OPENAI.md.** Local and mocked-network tests do not establish live-provider readiness.
