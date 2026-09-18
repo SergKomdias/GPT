@@ -3,6 +3,7 @@ import pg from 'pg';
 import { readFile, mkdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { AsyncLocalStorage } from 'node:async_hooks';
+import { lockLocalDatabase } from './local-db-lock';
 export interface DB {
   query(sql: string, params?: any[]): Promise<{ rows: any[] }>;
   exec(sql: string): Promise<unknown>;
@@ -20,15 +21,36 @@ export async function createDB(path = process.env.DATA_DIR || '.data/learnmap'):
     };
   } else {
     if (path !== 'memory://') await mkdir(dirname(path), { recursive: true });
-    db = new PGlite(path) as unknown as DB;
+    const unlock = path === 'memory://' ? async () => {} : await lockLocalDatabase(path);
+    try {
+      const local = new PGlite(path);
+      await local.waitReady;
+      db = {
+        query: (sql, params) => local.query(sql, params),
+        exec: (sql) => local.exec(sql),
+        close: async () => {
+          try {
+            await local.close();
+          } finally {
+            await unlock();
+          }
+        },
+      };
+    } catch (error) {
+      await unlock();
+      throw error;
+    }
   }
-  await db.exec('BEGIN');
   try {
+    await db.exec('BEGIN');
     await db.exec(await readFile(new URL('./schema.sql', import.meta.url), 'utf8'));
     await db.exec('COMMIT');
   } catch (e) {
-    await db.exec('ROLLBACK');
-    await db.close();
+    try {
+      await db.exec('ROLLBACK');
+    } finally {
+      await db.close();
+    }
     throw e;
   }
   return guarded(db);

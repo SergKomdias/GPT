@@ -1,5 +1,11 @@
 # LearnMap 0.2 database
 
+## Local database safety
+
+PGlite permits only one process per data directory. LearnMap acquires an OS-owned lock before opening a file-backed database (a named pipe on Windows, a deterministic localhost port elsewhere). A conflicting lock fails closed. SIGINT/Ctrl+C and SIGTERM close the HTTP server and database; startup migration/seed and port-binding errors also close the database. Abrupt process termination or power loss still requires recovery and is not a backup strategy.
+
+For a local backup, stop the server gracefully, copy the complete directory selected by `DATA_DIR` (default `.data/learnmap`), and keep the copy private. Restore into a separate directory, verify it, then set `DATA_DIR` to that directory. Never start two PGlite instances against the same files, including maintenance scripts. If opening fails with a WAL/checkpoint error, preserve the original directory before recovery. Do not silently reset WAL or replace the database with demo data: recent transactions may be lost. Recovery experiments belong on copies; validate a logical export/import with constraints and table comparisons before reuse. Production pilots require external PostgreSQL and the backup process in DEPLOYMENT.md.
+
 Schema: server/schema.sql. Both PGlite and optional PostgreSQL use the same SQL. Initialization and seed migrations are idempotent; back up the database before upgrading real data.
 
 Identity remains users, auth_sessions, student_profiles, parent_profiles, parent_student_links and parent_invites. Profile adds validated IANA timezone (legacy default Europe/Kyiv) and daily_minutes (10–90).

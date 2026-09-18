@@ -32,6 +32,8 @@ pnpm start
 
 Open http://127.0.0.1:3100 after stopping any existing dev API. `pnpm start` serves both API and built frontend. For deployment behind HTTPS set `NODE_ENV=production`, `APP_ORIGIN` to the exact public origin, provision an administrator using server environment variables, and disable demo mode. Hosting/deployment was not performed; use the dedicated deployment runbook.
 
+On Windows, after dependencies and the production build are present, double-click `START-LEARNMAP.cmd`. It uses the bundled Codex Node runtime when available, or Node from PATH. Open http://127.0.0.1:3100 and keep the window open. Stop with Ctrl+C and wait for shutdown before starting again. Run only one local server per database; a second instance is rejected before opening PGlite. Parent invitation codes expire 24 hours after creation and can be redeemed once.
+
 ## Project structure
 
 ```text
