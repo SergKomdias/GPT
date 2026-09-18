@@ -4,7 +4,7 @@
 
 ## Pilot status
 
-The 0.3 implementation adds parental consent/withdrawal, a separate Speaking permission, account export/deletion, transcript retention, internal aggregate metrics, optional feedback and content approval gates. **Hosting is deferred by the owner. Live OpenAI verification is pending server credentials.** Local and mocked-network tests do not establish live-provider readiness.
+The 0.3 implementation adds parental consent/withdrawal, a separate Speaking permission, account export/deletion, transcript retention, internal aggregate metrics, optional feedback and content approval gates. **Hosting is deferred by the owner. Live OpenAI synthetic smoke passed on 2026-09-18; see docs/LIVE-OPENAI.md.** Local and mocked-network tests do not establish live-provider readiness.
 
 See [PILOT.md](PILOT.md) for the first-family guide and readiness checklist, [DEPLOYMENT.md](DEPLOYMENT.md) for HTTPS/PostgreSQL/backup configuration, and [QA.md](QA.md) for verification status. In pilot mode, draft content is blocked until a teacher approves it; no content was automatically declared approved.
 
@@ -93,7 +93,7 @@ projects/learnmap/
 | Speech recording                   | Real browser MediaRecorder; raw bytes processed in memory, not retained                       |
 | AI without credentials             | Explicit mock adapter; example transcript, limited grammar correction, authored lessons/hints |
 | Mock voice                         | Browser speech synthesis, dependent on installed voices/browser support                       |
-| OpenAI adapter                     | Implemented server-side; real account/API verification not performed                          |
+| OpenAI adapter                     | Implemented server-side; real synthetic API smoke passed 2026-09-18                          |
 | Pronunciation and acoustic fluency | Not assessed; never inferred from transcript                                                  |
 
 ## Environment and database
@@ -141,7 +141,7 @@ Verification results, screenshot index and design comparison: [docs/QA.md](docs/
 
 - This is a limited testing curriculum, not a complete country/grade program. Some sample prompts/rationales remain in English even with Ukrainian navigation. Teacher review, better distractors and distinct transfer tasks are needed before a real-user pilot. Legacy strand-level questions remain for compatibility; diagnostics and coverage use subskills.
 - Mastery/confidence are transparent heuristics, not a calibrated psychometric or CEFR measurement. See [docs/PROGRESSION.md](docs/PROGRESSION.md). Free speaking cannot yet earn proficiency credit.
-- Real OpenAI calls, paid-account/model availability, external PostgreSQL and physical device audio have not been verified. Local/mock operation is verified.
+- Real OpenAI synthetic API smoke passed on 2026-09-18 for the configured models. External PostgreSQL, physical device audio and teacher review of output quality remain unverified.
 - Short transactions fix the provider-blocking problem. A multi-worker deployment still needs durable jobs, distributed provider deduplication, request quotas, timeouts/recovery and a load test. History shown in the UI is capped at 500; report aggregation reads the full history and needs database-side aggregation for larger datasets.
 - Consent and live-database retention/export/deletion controls are implemented. Guardian verification, email/password recovery, HTTPS hosting and backup/restore drills still require operator preparation. No public deployment is included.
 - Legacy v0.1 evidence did not store confidence snapshots. New weekly comparisons are reliable from the v0.2 evidence boundary; older records are preserved rather than retroactively assigned fabricated confidence/retention.

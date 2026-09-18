@@ -1,6 +1,6 @@
 # AI tutor and learning evidence
 
-AIService supports authored/mock and optional OpenAI adapters. Models are configured server-side; keys never belong in VITE variables. Responses, transcription and TTS integrations are unchanged and have not been verified against a paid account. Objective question grading is deterministic.
+AIService supports authored/mock and optional OpenAI adapters. Models are configured server-side; keys never belong in VITE variables. Responses, transcription and TTS integrations passed real synthetic smoke on 2026-09-18; see docs/LIVE-OPENAI.md. Objective question grading is deterministic.
 
 Positive score increments are at most 4 per independent correct answer, weighted down by hints, capped at +8 per skill/session and +12 per skill/local day. An incorrect answer subtracts 4, bounded at zero. First assessment uses a neutral 50 prior, not a claim of previously demonstrated knowledge. Zero-confidence scores are hidden. Three or more hints give no positive knowledge increment.
 
@@ -21,4 +21,4 @@ Previously assessed subjects (at least 70% coverage and 35% mean confidence) use
 
 ## Pilot 0.3
 
-0.3: OpenAI Responses handles concept explanations, five progressive hint levels and mistake explanations. Structured JSON feedback is validated for correction, grammar, vocabulary, relevance and sentence complexity. Pronunciation/fluency remain Not assessed. Objective grading never calls OpenAI. Text failure returns authored explanation/hint with a visible warning; audio/conversation failure remains an explicit retry error rather than fabricated learner text. Consent/Speaking controls are checked around external phases. pilot:smoke uses fictional text and synthetic TTS audio. Real live verification is pending credentials; mocked-network contracts cover request shapes, failures and concurrency. Responses uses store:false; see official provider data policy for separate retention.
+0.3: OpenAI Responses handles concept explanations, five progressive hint levels and mistake explanations. Structured JSON feedback is validated for correction, grammar, vocabulary, relevance and sentence complexity. Pronunciation/fluency remain Not assessed. Objective grading never calls OpenAI. Text failure returns authored explanation/hint with a visible warning; audio/conversation failure remains an explicit retry error rather than fabricated learner text. Consent/Speaking controls are checked around external phases. pilot:smoke uses fictional text and synthetic TTS audio. Real synthetic live smoke passed on 2026-09-18; mocked-network contracts additionally cover request shapes, failures and concurrency. See docs/LIVE-OPENAI.md. Responses uses store:false; see official provider data policy for separate retention.

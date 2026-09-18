@@ -21,7 +21,7 @@ Screenshots were visually inspected. Existing palette/sidebar/layout are retaine
 
 ## External verification status
 
-**Live OpenAI is not yet verified**: local OPENAI_API_KEY was empty at the verification checkpoint. The explicit pilot:smoke command is ready and uses fictional text plus synthetic speech. Passing mocked network tests does not demonstrate provider access, model availability, output quality or audio quality.
+**Live OpenAI synthetic smoke passed on 2026-09-18**, using the locally configured key, fictional text and synthetic speech. All 11 checks completed successfully; see [LIVE-OPENAI.md](LIVE-OPENAI.md). This verifies provider access and the exercised integration paths. It is not teacher validation, a real-microphone test or a subjective audio-quality review.
 
 **Hosting is deferred by the owner.** No deployed URL, external PostgreSQL connection, Docker image execution, HTTPS certificate issuance, backup/restore drill or physical device microphone QA was performed. Docker is not installed in this environment. Configuration is provided in DEPLOYMENT.md; deployment acceptance remains mandatory.
 
