@@ -69,11 +69,11 @@ describe('learning evidence', () => {
     ).toBe('b');
     expect(chooseDiagnostic(qs, skills, { asked: Array(24).fill('x') })).toBeNull();
   });
-  it('has a valid acyclic curriculum with nine answerable questions per skill', () => {
+  it('has answerable questions and valid prerequisites throughout the curriculum', () => {
     const ids = new Set(seedSkills.map((s) => s.id));
     for (const s of seedSkills) {
       for (const pre of s.pre) expect(ids.has(pre)).toBe(true);
-      for (let n = 0; n < 9; n++) {
+      for (let n = 0; n < (s.subject === 'math' ? 8 : 9); n++) {
         const q = sampleQuestion(s.id, n);
         expect(q.options).toHaveLength(4);
         expect(q.options[q.answer]).toBeTruthy();

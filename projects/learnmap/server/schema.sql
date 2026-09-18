@@ -56,3 +56,12 @@ CREATE TABLE IF NOT EXISTS pilot_events(id text PRIMARY KEY,user_id text REFEREN
 CREATE INDEX IF NOT EXISTS pilot_events_time ON pilot_events(created_at,event);
 CREATE TABLE IF NOT EXISTS pilot_feedback(user_id text REFERENCES users(id) ON DELETE CASCADE,screen text NOT NULL,context_id text NOT NULL,rating text NOT NULL CHECK(rating IN ('up','neutral','down')),created_at timestamptz NOT NULL DEFAULT now(),PRIMARY KEY(user_id,screen,context_id));
 INSERT INTO schema_migrations(id) VALUES('pilot-v3') ON CONFLICT DO NOTHING;
+ALTER TABLE skills ADD COLUMN IF NOT EXISTS grade_level integer CHECK(grade_level BETWEEN 1 AND 12);
+ALTER TABLE skills ADD COLUMN IF NOT EXISTS diagnostic_branch text;
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM schema_migrations WHERE id='math-difficulty-five-levels') THEN
+    ALTER TABLE questions DROP CONSTRAINT IF EXISTS questions_difficulty_check;
+    ALTER TABLE questions ADD CONSTRAINT questions_difficulty_check CHECK(difficulty BETWEEN 1 AND 5);
+    INSERT INTO schema_migrations(id) VALUES('math-difficulty-five-levels');
+  END IF;
+END $$;

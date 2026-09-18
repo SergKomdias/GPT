@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { DB } from './db';
+import { chooseMathDiagnostic } from './math-diagnostic';
+import { mathLevels } from './math-content';
 import {
   masteryStatus,
   updateScore,
@@ -388,11 +390,10 @@ export function diagnosticMetrics(questions: any[], skills: any[], state: any) {
   const confidence = counts.length
       ? counts.reduce((a, n) => a + Math.min(1, n / 2), 0) / counts.length
       : 0,
-    branches = new Set(leaves.map((s) => s.strand_id || s.topic_id || s.id)),
+    branch = (s: any) => s.diagnostic_branch || s.strand_id || s.topic_id || s.id,
+    branches = new Set(leaves.map(branch)),
     testedBranches = new Set(
-      leaves
-        .filter((s) => asked.some((q) => q.skill_id === s.id))
-        .map((s) => s.strand_id || s.topic_id || s.id),
+      leaves.filter((s) => asked.some((q) => q.skill_id === s.id)).map(branch),
     );
   const maxQuestions = state.recheck ? 12 : 24;
   const coverage = counts.length ? covered / counts.length : 0,
@@ -410,16 +411,19 @@ export function diagnosticMetrics(questions: any[], skills: any[], state: any) {
     totalBranches: branches.size,
     recheck: !!state.recheck,
     maxQuestions,
-    complete: enough || state.asked.length >= maxQuestions,
-    reason: enough
-      ? 'coverage-confidence'
-      : state.asked.length >= maxQuestions
-        ? 'question-limit'
-        : null,
+    complete: !!state.stopReason || enough || state.asked.length >= maxQuestions,
+    reason:
+      state.stopReason ||
+      (enough
+        ? 'coverage-confidence'
+        : state.asked.length >= maxQuestions
+          ? 'question-limit'
+          : null),
   };
 }
 export function chooseDiagnostic(questions: any[], skills: any[], state: any, correct?: boolean) {
   if (diagnosticMetrics(questions, skills, state).complete) return null;
+  if (state.algorithm === 'math-v3') return chooseMathDiagnostic(questions, skills, state, correct);
   const leaves = skills.filter((s) => !skills.some((c) => c.strand_id === s.id)),
     remaining = questions.filter(
       (q) => !state.asked.includes(q.id) && leaves.some((s) => s.id === q.skill_id),
@@ -461,4 +465,7 @@ export const publicQuestion = (q: any) => ({
   prompt: q.prompt,
   options: q.options,
   difficulty: q.difficulty,
+  ...(q.id.startsWith('math-v3-')
+    ? { cognitive_level: mathLevels[q.difficulty - 1], max_difficulty: 5 }
+    : {}),
 });

@@ -18,6 +18,8 @@ Security remains server-side: HttpOnly SameSite sessions, salted scrypt hashes, 
 
 See DATABASE.md for migration details, AI_TUTOR.md for evidence rules and docs/QA.md for validation and remaining pilot limitations.
 
+Mathematics Diagnostic uses `server/math-content.ts` for authored five-level tasks and curriculum metadata, and `server/math-diagnostic.ts` for grade-aware routing. New math session state carries `algorithm: math-v3`, the server profile grade, cognitive band and route reason. Correct responses increase demand across skills; mistakes prioritize prerequisite edges. Finite-bank exhaustion ends the diagnostic explicitly rather than lowering the challenge. Legacy sessions and other subjects retain their existing router. Objective grading still compares the server answer key and never calls AI. See [routing and fixtures](docs/MATHEMATICS-DIAGNOSTIC.uk.md).
+
 
 ## Pilot 0.3
 

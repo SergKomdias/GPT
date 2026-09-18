@@ -1,5 +1,6 @@
 import { englishUnits, englishQuestion } from './english-content';
 import { conceptChecks } from './concept-content';
+import { mathDefinitions, mathQuestion } from './math-content';
 export type LocalText = { en: string; uk: string };
 export const bi = (en: string, uk: string): LocalText => ({ en, uk });
 type SeedSkill = {
@@ -216,6 +217,27 @@ export const seedSkills: SeedSkill[] = [
     ),
   ),
 ];
+for (const [id, title, , branch, pre, rule] of mathDefinitions) {
+  const existing = seedSkills.find((skill) => skill.id === id);
+  if (existing) {
+    existing.pre = pre;
+    existing.title = bi(title, title);
+    existing.explanation = bi(rule, rule);
+  } else
+    seedSkills.push(
+      s(
+        id,
+        'math',
+        branch === 'geometry' ? 'geometry' : 'algebra',
+        title,
+        title,
+        pre,
+        0,
+        rule,
+        rule,
+      ),
+    );
+}
 seedSkills.push(
   ...englishUnits.map((u) => ({
     ...s(u.id, 'english', 'b1', u.title, u.uk, u.pre, 0, u.rule, u.rule),
@@ -223,6 +245,8 @@ seedSkills.push(
   })),
 );
 export function sampleQuestion(id: string, n: number) {
+  const math = mathQuestion(id, n);
+  if (math) return math;
   const english = englishQuestion(id, n);
   if (english) return english;
   const a = n + 2,

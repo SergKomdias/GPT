@@ -6,6 +6,8 @@
 
 У застосунку цей опис доступний у розділі **«Про LearnMap»** (`/about`): зі сторінки входу та меню кабінетів учня й батьків. Українська — початкова мова інтерфейсу; збережений ручний вибір англійської залишається чинним.
 
+**Mathematics Diagnostic:** 25 навичок, 200 авторських запитань, п’ять когнітивних рівнів; старт за класом, підвищення складності та перевірка передумов після помилок. [Алгоритм, fixtures і міграція](docs/MATHEMATICS-DIAGNOSTIC.uk.md). Нові матеріали потребують учительського затвердження перед пілотом.
+
 ## Pilot status
 
 The 0.3 implementation adds parental consent/withdrawal, a separate Speaking permission, account export/deletion, transcript retention, internal aggregate metrics, optional feedback and content approval gates. **Hosting is deferred by the owner. Live OpenAI synthetic smoke passed on 2026-09-18; see docs/LIVE-OPENAI.md.** Local and mocked-network tests do not establish live-provider readiness.

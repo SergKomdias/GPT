@@ -425,14 +425,20 @@ export function createApp(db: DB, provider?: AIService) {
     const all = (await skillsFor(db, res.locals.user.id)).filter((s) => s.subject_id === subject);
     const qs = (
       await db.query(
-        'SELECT q.* FROM questions q JOIN skills s ON s.id=q.skill_id WHERE s.subject_id=$1 ' +
+        'SELECT q.* FROM questions q ' +
+          (subject === 'math' ? 'JOIN diagnostic_questions dq ON dq.question_id=q.id ' : '') +
+          'JOIN skills s ON s.id=q.skill_id WHERE s.subject_id=$1 ' +
           (pilotMode() ? "AND q.review_status='approved' AND s.review_status='approved' " : '') +
           'ORDER BY s.sort_order,q.difficulty,q.id',
         [subject],
       )
     ).rows;
     const baseline = subjectSummary(all);
+    const profile = (
+      await db.query('SELECT grade FROM student_profiles WHERE student_id=$1', [res.locals.user.id])
+    ).rows[0];
     const state: any = {
+      ...(subject === 'math' ? { algorithm: 'math-v3', grade: profile.grade, band: 2 } : {}),
       previous: (
         await db.query(
           'SELECT DISTINCT question_id FROM diagnostic_answers a JOIN diagnostic_sessions d ON d.id=a.session_id WHERE d.student_id=$1 AND d.subject_id=$2',
@@ -501,13 +507,19 @@ export function createApp(db: DB, provider?: AIService) {
       );
       const qs = (
         await db.query(
-          'SELECT q.* FROM questions q JOIN skills s ON s.id=q.skill_id WHERE s.subject_id=$1 ' +
+          'SELECT q.* FROM questions q ' +
+            (state.algorithm === 'math-v3'
+              ? 'JOIN diagnostic_questions dq ON dq.question_id=q.id '
+              : '') +
+            'JOIN skills s ON s.id=q.skill_id WHERE s.subject_id=$1 ' +
             (pilotMode() ? "AND q.review_status='approved' AND s.review_status='approved' " : '') +
             'ORDER BY s.sort_order,q.difficulty,q.id',
           [session.subject_id],
         )
       ).rows;
       const next = chooseDiagnostic(qs, all, state, correct);
+      if (!next && !diagnosticMetrics(qs, all, state).complete)
+        state.stopReason = 'content-exhausted';
       state.current = next?.id;
       state.started = Date.now();
       await db.query('UPDATE diagnostic_sessions SET state=$2,completed=$3 WHERE id=$1', [
@@ -1109,7 +1121,7 @@ export function createApp(db: DB, provider?: AIService) {
       .object({
         id: z.string().min(1),
         skill_id: z.string(),
-        difficulty: z.number().int().min(1).max(3),
+        difficulty: z.number().int().min(1).max(5),
         prompt: text,
         options: z.array(z.string().min(1)).length(4),
         answer: z.number().int().min(0).max(3),

@@ -239,7 +239,7 @@ describe.sequential('learning v2 regression', () => {
   });
   it('diagnostic explores all branches and continues beyond eight questions', () => {
     const skills = seedSkills
-        .filter((s) => s.subject === 'math')
+        .filter((s) => s.subject === 'physics')
         .map((s) => ({ ...s, subject_id: s.subject, topic_id: s.topic, prerequisites: s.pre })),
       qs = skills.flatMap((s) => Array.from({ length: 9 }, (_, n) => sampleQuestion(s.id, n))),
       state: any = { asked: [], skill: skills[0].id, difficulty: 1, streak: 0 };

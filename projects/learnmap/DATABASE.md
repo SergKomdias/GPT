@@ -12,7 +12,9 @@ Identity remains users, auth_sessions, student_profiles, parent_profiles, parent
 
 student_subjects stores student_id, subject_id, active, started_at, paused_at with a composite primary key and active-owner index. New onboarding must select at least one subject; updates are transactional. Existing onboarded learners retain their original subjects. Pausing changes only active/paused_at, and resuming restores access to the same history.
 
-Content retains subjects/curricula/topics/skills/dependencies/questions. skills.strand_id groups English subskills under six strands. Coverage counts 59 leaf skills: Math 15, Physics 18, English 26. Root English rows and old answers are retained for compatibility, not counted twice.
+Content retains subjects/curricula/topics/skills/dependencies/questions. skills.strand_id groups English subskills under six strands. Coverage counts 69 leaf skills: Math 25, Physics 18, English 26. Root English rows and old answers are retained for compatibility, not counted twice.
+
+Mathematics migration `math-difficulty-five-levels` expands the question CHECK constraint from 1–3 to 1–5. Skills gain `grade_level` and `diagnostic_branch`; `math-diagnostic-v3` seeds 200 versioned math questions and updates prerequisites once. Legacy bundled math question rows and historical answers remain unchanged, but their `diagnostic_questions` entries are retired. New sessions select active diagnostic entries; existing legacy sessions retain their original state/routing. New and revised content stays draft until reviewed. Re-running seed preserves later approvals. See [Mathematics Diagnostic](docs/MATHEMATICS-DIAGNOSTIC.uk.md).
 
 student_skill_mastery adds independent_count, evidence_days, retention_count, long_retention_count to score/confidence/time/attempt fields. skill_evidence records student, skill, session, question, independence, correctness, local day, retention flags, full before/after states and timestamp. A unique student/session/question key prevents repeated evidence credit; owner/skill/time indexes support reconstruction.
 

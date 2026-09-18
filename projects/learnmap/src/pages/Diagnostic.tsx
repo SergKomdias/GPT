@@ -37,10 +37,15 @@ export function Diagnostic() {
                   'Question limit reached. Uncertainty remains; continue in future sessions.',
                   'Досягнуто межі запитань. Невизначеність залишається; продовжимо на наступних заняттях.',
                 )
-              : t(
-                  'Coverage and diagnostic confidence reached.',
-                  'Достатнє покриття й впевненість діагностики.',
-                )}
+              : state.metrics?.reason === 'coverage-confidence'
+                ? t(
+                    'Coverage and diagnostic confidence reached.',
+                    'Достатнє покриття й впевненість діагностики.',
+                  )
+                : t(
+                    'The available questions at the required difficulty are finished. Unchecked skills need further assessment.',
+                    'Доступні запитання потрібної складності завершилися. Неперевірені навички потребують подальшої діагностики.',
+                  )}
           </p>
           <h2>{t('Your map is taking shape.', 'Твоя карта набуває форми.')}</h2>
           <p>
@@ -75,6 +80,11 @@ export function Diagnostic() {
             {Math.round(state.metrics.confidence * 100)}%
           </p>
           <progress value={state.count} max={state.metrics.maxQuestions} />
+          {state.question.max_difficulty === 5 && (
+            <p className="coverage">
+              Рівень складності {state.question.difficulty}/5 · {state.question.cognitive_level}
+            </p>
+          )}
           {feedback ? (
             <Notice>
               {feedback.correct

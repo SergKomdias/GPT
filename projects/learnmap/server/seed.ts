@@ -2,6 +2,7 @@ import { randomBytes } from 'node:crypto';
 import type { DB } from './db';
 import { seedSkills, sampleQuestion, bi } from './content';
 import { hashPassword } from './auth';
+import { mathDefinitions } from './math-content';
 export async function seed(db: DB) {
   for (const [id, en, uk] of [
     ['math', 'Mathematics', 'Математика'],
@@ -57,7 +58,7 @@ export async function seed(db: DB) {
         pos,
         kind,
       ]);
-    for (let n = 0; n < 9; n++) {
+    for (let n = 0; n < (s.subject === 'math' ? 8 : 9); n++) {
       const q = sampleQuestion(s.id, n);
       await db.query(
         'INSERT INTO questions VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT DO NOTHING',
@@ -82,10 +83,27 @@ export async function seed(db: DB) {
         p,
       ]);
   if (
+    !(await db.query("SELECT 1 FROM schema_migrations WHERE id='math-diagnostic-v3'")).rows.length
+  ) {
+    for (const [id, title, grade, branch, pre, rule] of mathDefinitions) {
+      await db.query(
+        "UPDATE skills SET title=$2,explanation=$3,grade_level=$4,diagnostic_branch=$5,review_status='draft' WHERE id=$1",
+        [id, JSON.stringify(bi(title, title)), JSON.stringify(bi(rule, rule)), grade, branch],
+      );
+      await db.query('DELETE FROM skill_dependencies WHERE skill_id=$1', [id]);
+      for (const p of pre) await db.query('INSERT INTO skill_dependencies VALUES($1,$2)', [id, p]);
+      // Retain old questions and all answers; retire only bundled legacy diagnostic entries.
+      await db.query('DELETE FROM diagnostic_questions WHERE question_id=ANY($1::text[])', [
+        Array.from({ length: 9 }, (_, i) => `${id}-${i}`),
+      ]);
+    }
+    await db.query("INSERT INTO schema_migrations(id) VALUES('math-diagnostic-v3')");
+  }
+  if (
     !(await db.query("SELECT 1 FROM schema_migrations WHERE id='sample-distractors-v2'")).rows
       .length
   ) {
-    for (const skill of seedSkills)
+    for (const skill of seedSkills.filter((s) => s.subject !== 'math'))
       for (let n = 0; n < 9; n++) {
         const q = sampleQuestion(skill.id, n);
         await db.query('UPDATE questions SET options=$2,answer=$3 WHERE id=$1', [
@@ -147,7 +165,7 @@ export async function seed(db: DB) {
   if (
     !(await db.query("SELECT 1 FROM schema_migrations WHERE id='learning-v2-content'")).rows.length
   ) {
-    for (const skill of seedSkills)
+    for (const skill of seedSkills.filter((s) => s.subject !== 'math'))
       for (let n = 0; n < 9; n++) {
         const q = sampleQuestion(skill.id, n);
         await db.query(
