@@ -92,17 +92,23 @@ export function EnglishDiagnostic() {
     }),
   );
   const task = session?.task;
-  const answer = () =>
+  const answer = (unknown = false) =>
     execute(async () => {
+      const submittedChoice = unknown ? -1 : choice;
+      const submittedText = unknown ? '' : text;
       const previous = {
         task,
-        choice,
-        text,
+        choice: task.options ? submittedChoice : choice,
+        text: unknown ? '[Не знаю]' : text,
         kind: task.kind,
       };
       const result = await api(`/english-diagnostic/${session.id}/answer`, 'POST', {
         taskId: task.id,
-        answer: task.kind === 'choice' || task.kind === 'listening' ? choice : text,
+        answer:
+          task.kind === 'choice' || task.kind === 'listening'
+            ? submittedChoice
+            : submittedText,
+        unknown,
       });
       setHistory((rows) => [...rows, previous]);
       accept(result);
@@ -332,6 +338,15 @@ export function EnglishDiagnostic() {
               ← Назад
             </button>
           ) : null}
+          {task.kind === 'short' ? (
+            <button
+              className="button secondary"
+              disabled={busy}
+              onClick={() => void answer(true)}
+            >
+              Не знаю
+            </button>
+          ) : null}
           {task.kind !== 'speaking' && (
             <button
               className="button"
@@ -340,7 +355,7 @@ export function EnglishDiagnostic() {
                 (task.options ? choice === null : !text.trim()) ||
                 (task.kind === 'listening' && !listened)
               }
-              onClick={() => void answer()}
+              onClick={() => void answer(false)}
             >
               {busy ? 'Обробляємо…' : 'Надіслати відповідь'}
             </button>
