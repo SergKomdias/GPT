@@ -89,6 +89,17 @@ export function englishAssessmentRoutes(
     const out = await tx(async () => {
       const student = res.locals.user.id;
       await guard(student);
+      const existing = (
+        await db.query(
+          'SELECT * FROM english_assessment_sessions WHERE student_id=$1 AND NOT completed ORDER BY created_at DESC LIMIT 1',
+          [student],
+        )
+      ).rows[0];
+      if (existing && !existing.state?.deleted) {
+        const task = (await pool()).find((item) => item.id === existing.state.current);
+        if (!task) fail('Поточний матеріал очікує перевірки викладача', 409);
+        return view(existing.id, existing.state, task);
+      }
       const state: EnglishState = {
         asked: [],
         observations: [],
