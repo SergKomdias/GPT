@@ -203,6 +203,12 @@ export async function exportData(db: DB, id: string) {
       [id],
     )
   ).rows;
+  data.family_messages = (
+    await db.query(
+      'SELECT student_id,sender_id,body,created_at FROM family_messages WHERE student_id=$1 OR sender_id=$1 ORDER BY created_at',
+      [id],
+    )
+  ).rows;
   data.telemetry = (
     await db.query(
       'SELECT event,subject_id,session_id,seconds,created_at FROM pilot_events WHERE user_id=$1',
