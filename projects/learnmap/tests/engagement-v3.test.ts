@@ -103,24 +103,42 @@ describe.sequential('LearnMap v3 engagement safeguards', () => {
     }
   });
 
-  it('returns a selected-word translation without exposing answer keys', async () => {
+  it('returns selected-word translation and downweights active diagnostic evidence', async () => {
     const student = await account();
     await db.query("INSERT INTO student_subjects(student_id,subject_id) VALUES($1,'english')", [
       student.id,
     ]);
+    const start = await req('/english-diagnostic', 'POST', {}, student.cookie);
+    expect(start.status).toBe(200);
     const translated = await req(
       '/english-diagnostic/translate',
       'POST',
-      { word: 'however' },
+      { word: 'however', sessionId: start.data.id, taskId: start.data.task.id },
       student.cookie,
     );
     expect(translated.status).toBe(200);
     expect(translated.data).toMatchObject({
       word: 'however',
       translation: 'однак',
-      assisted: false,
-      weight: 1,
+      assisted: true,
+      weight: 0.25,
     });
+    const answer = start.data.task.kind === 'short' ? 'unknown' : -1;
+    const result = await req(
+      '/english-diagnostic/' + start.data.id + '/answer',
+      'POST',
+      { taskId: start.data.task.id, answer },
+      student.cookie,
+    );
+    expect(result.status).toBe(200);
+    const saved = (
+      await db.query(
+        'SELECT observation FROM english_assessment_answers WHERE session_id=$1 AND task_id=$2',
+        [start.data.id, start.data.task.id],
+      )
+    ).rows[0].observation;
+    expect(saved.assisted).toBe(true);
+    expect(saved.weight).toBe(0.25);
   });
 
   it('allows linked family messaging and blocks an unrelated parent', async () => {
