@@ -5,6 +5,7 @@ import { api } from '../services/api';
 import { Heading, Notice, Loading, Arrow } from '../components/UI';
 import { Question } from '../features/learning/Question';
 import { EnglishDiagnostic } from './EnglishDiagnostic';
+import { MicroBreak, isMicroBreakMoment } from '../components/MicroBreak';
 export function Diagnostic() {
   const { subject } = useParams();
   return subject === 'english' ? <EnglishDiagnostic /> : <SubjectDiagnostic />;
@@ -17,11 +18,74 @@ function SubjectDiagnostic() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState<any>(null);
+  const [history, setHistory] = useState<any[]>([]);
+  const [reviewIndex, setReviewIndex] = useState<number | null>(null);
+  const [breakAt, setBreakAt] = useState<number | null>(null);
   useEffect(() => {
     void api('/diagnostic', 'POST', { subject })
       .then(setState)
       .catch((e) => setError(e.message));
   }, [subject]);
+
+  if (reviewIndex !== null && history[reviewIndex]) {
+    const row = history[reviewIndex];
+    return (
+      <div className="narrow">
+        <Heading
+          title={t('Previous question', 'Попереднє запитання')}
+          description={t(
+            'Review only: the answer has already been used for the adaptive route.',
+            'Лише перегляд: відповідь уже використана для адаптивного маршруту.',
+          )}
+        />
+        <section className="panel practice-panel diagnostic-review">
+          <Question
+            question={row.question}
+            value={row.answer}
+            onChange={() => {}}
+            disabled
+            allowUnknown
+          />
+          <Notice>
+            {row.feedback?.correct
+              ? t('Answered correctly.', 'Відповідь була правильною.')
+              : row.answer === -1
+                ? t('You marked “I don’t know”.', 'Ти позначив «Не знаю».')
+                : t('This answer was not correct.', 'Ця відповідь була неправильною.')}
+          </Notice>
+          <div className="practice-footer diagnostic-history-nav">
+            <button
+              className="button secondary"
+              disabled={reviewIndex === 0}
+              onClick={() => setReviewIndex((i) => Math.max(0, (i || 0) - 1))}
+            >
+              ← {t('Earlier', 'Раніше')}
+            </button>
+            <button
+              className="button"
+              onClick={() =>
+                reviewIndex < history.length - 1
+                  ? setReviewIndex(reviewIndex + 1)
+                  : setReviewIndex(null)
+              }
+            >
+              {reviewIndex < history.length - 1
+                ? t('Next reviewed', 'Наступне переглянуте')
+                : t('Back to current', 'До поточного')} →
+            </button>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  if (breakAt !== null) {
+    return (
+      <div className="narrow">
+        <MicroBreak count={breakAt} onDone={() => setBreakAt(null)} />
+      </div>
+    );
+  }
   return (
     <div className="narrow">
       <Heading
@@ -105,8 +169,18 @@ function SubjectDiagnostic() {
             value={answer}
             onChange={setAnswer}
             disabled={busy}
+            allowUnknown
           />
           <div className="practice-footer">
+            {history.length ? (
+              <button
+                className="button secondary"
+                onClick={() => setReviewIndex(history.length - 1)}
+                disabled={busy}
+              >
+                ← {t('Back', 'Назад')}
+              </button>
+            ) : null}
             <span>
               {t(
                 'The next question adapts to your answer.',
@@ -124,9 +198,14 @@ function SubjectDiagnostic() {
                     answer,
                     questionId: state.question.id,
                   });
+                  setHistory((rows) => [
+                    ...rows,
+                    { question: state.question, answer, feedback: result },
+                  ]);
                   setFeedback(result);
                   setState({ ...result, id: state.id });
                   setAnswer(null);
+                  if (!result.completed && isMicroBreakMoment(result.count)) setBreakAt(result.count);
                 } catch (e) {
                   setError((e as Error).message);
                 } finally {

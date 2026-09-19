@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useApp } from '../hooks/useApp';
 import { api } from '../services/api';
 import { Heading, Notice } from '../components/UI';
+import { FamilyMessages } from '../components/FamilyMessages';
 export function Settings({ family = false }: { family?: boolean }) {
   const { t, user, lang, setLang, logout, config } = useApp();
   const [code, setCode] = useState('');
@@ -96,6 +97,7 @@ export function Settings({ family = false }: { family?: boolean }) {
         ) : null}
         <Notice error>{error}</Notice>
       </section>
+      {family && user?.role === 'student' ? <FamilyMessages /> : null}
       {!family && <PrivacyControls />}
     </div>
   );

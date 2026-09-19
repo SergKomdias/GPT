@@ -415,6 +415,35 @@ export function createApp(db: DB, provider?: AIService) {
     ]);
     res.json({ ok: true });
   });
+  route('get', '/api/family/messages', authenticated, async (req: any, res: any) => {
+    const student = await allowedStudent(res, req.query.student ? String(req.query.student) : undefined);
+    const rows = (
+      await db.query(
+        'SELECT m.id,m.student_id,m.sender_id,m.body,m.created_at,u.name sender_name,u.role sender_role FROM family_messages m JOIN users u ON u.id=m.sender_id WHERE m.student_id=$1 ORDER BY m.created_at DESC LIMIT 100',
+        [student],
+      )
+    ).rows.reverse();
+    res.json(rows);
+  });
+  route('post', '/api/family/messages', authenticated, async (req: any, res: any) => {
+    const student = await allowedStudent(
+      res,
+      req.body.student ? z.string().parse(req.body.student) : undefined,
+    );
+    const body = z.string().trim().min(1).max(1000).parse(req.body.body);
+    const id = randomUUID();
+    await db.query(
+      'INSERT INTO family_messages(id,student_id,sender_id,body) VALUES($1,$2,$3,$4)',
+      [id, student, res.locals.user.id, body],
+    );
+    const row = (
+      await db.query(
+        'SELECT m.id,m.student_id,m.sender_id,m.body,m.created_at,u.name sender_name,u.role sender_role FROM family_messages m JOIN users u ON u.id=m.sender_id WHERE m.id=$1',
+        [id],
+      )
+    ).rows[0];
+    res.json(row);
+  });
   async function question(id: string) {
     const q = (await db.query('SELECT * FROM questions WHERE id=$1', [id])).rows[0];
     if (!q) fail('Question not found', 404);
@@ -513,7 +542,7 @@ export function createApp(db: DB, provider?: AIService) {
     authenticated,
     role('student'),
     async (req: any, res: any) => {
-      const answer = z.number().int().min(0).max(3).parse(req.body.answer);
+      const answer = z.number().int().min(-1).max(3).parse(req.body.answer);
       const session = await owned('diagnostic_sessions', req.params.id, res.locals.user.id);
       if (session.completed) fail('Already completed');
       await requireActive(db, res.locals.user.id, session.subject_id);

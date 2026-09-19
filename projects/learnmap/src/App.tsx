@@ -11,6 +11,7 @@ import { Diagnostic } from './pages/Diagnostic';
 import { Lesson } from './pages/Lesson';
 import { Speaking } from './pages/Speaking';
 import { Listening } from './pages/Listening';
+import { ARLab } from './pages/ARLab';
 import { Progress } from './pages/Progress';
 import { Parent } from './pages/Parent';
 import { Settings } from './pages/Settings';
@@ -42,6 +43,7 @@ export default function App() {
             <Route path="lesson/:skill" element={student(<Lesson />)} />
             <Route path="speaking" element={student(<Speaking />)} />
             <Route path="listening" element={student(<Listening />)} />
+            <Route path="ar-lab" element={student(<ARLab />)} />
             <Route path="progress" element={student(<Progress />)} />
             <Route path="family" element={student(<Settings family />)} />
             <Route path="settings" element={<Settings />} />

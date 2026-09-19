@@ -78,10 +78,41 @@ export function englishAssessmentRoutes(
       state.phase === 'complete',
     ]);
   }
+  app.post(prefix + '/translate', async (req, res) => {
+    const student = res.locals.user.id;
+    await guard(student);
+    const word = z.string().trim().min(1).max(40).parse(req.body.word);
+    const sessionId = z.string().optional().parse(req.body.sessionId);
+    const taskId = z.string().optional().parse(req.body.taskId);
+    if (sessionId && taskId)
+      await tx(async () => {
+        const { s } = await current(student, sessionId, taskId);
+        s.state.assisted = [...new Set([...(s.state.assisted || []), taskId])];
+        await save(s.id, s.state);
+      });
+    res.json({
+      word,
+      translation: await ai.translateEnglishWord(word),
+      assisted: !!(sessionId && taskId),
+      weight: sessionId && taskId ? 0.25 : 1,
+    });
+  });
+
   app.post(prefix, async (_req, res) => {
     const out = await tx(async () => {
       const student = res.locals.user.id;
       await guard(student);
+      const existing = (
+        await db.query(
+          'SELECT * FROM english_assessment_sessions WHERE student_id=$1 AND NOT completed ORDER BY created_at DESC LIMIT 1',
+          [student],
+        )
+      ).rows[0];
+      if (existing && !existing.state?.deleted) {
+        const task = (await pool()).find((item) => item.id === existing.state.current);
+        if (!task) fail('Поточний матеріал очікує перевірки викладача', 409);
+        return view(existing.id, existing.state, task);
+      }
       const state: EnglishState = {
         asked: [],
         observations: [],
@@ -204,7 +235,7 @@ export function englishAssessmentRoutes(
         else
           z.number()
             .int()
-            .min(0)
+            .min(-1)
             .max((task.options?.length || 4) - 1)
             .parse(answer);
         correct = gradeEnglish(task, answer);
@@ -213,7 +244,7 @@ export function englishAssessmentRoutes(
       return await tx(async () => {
         const { s } = await current(student, id, taskId);
         await guard(student, task.kind === 'speaking');
-        if (task.kind === 'listening' && s.state.assisted?.includes(task.id)) weight = 0.25;
+        if (s.state.assisted?.includes(task.id)) weight = 0.25;
         const observation: EnglishObservation = {
           id: task.id,
           strand: task.strand,

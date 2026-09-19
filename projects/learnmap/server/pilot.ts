@@ -42,6 +42,12 @@ export const eventNames = [
   'speaking_started',
   'speaking_completed',
   'listening_completed',
+  'ar_mission_started',
+  'prediction_submitted',
+  'prediction_correct',
+  'mission_completed',
+  'next_mission_clicked',
+  'voluntary_continue',
   'subject_added',
   'subject_paused',
   'parent_dashboard_viewed',
@@ -203,6 +209,12 @@ export async function exportData(db: DB, id: string) {
       [id],
     )
   ).rows;
+  data.family_messages = (
+    await db.query(
+      'SELECT student_id,sender_id,body,created_at FROM family_messages WHERE sender_id=$1 OR student_id=$1 OR student_id IN (SELECT student_id FROM parent_student_links WHERE parent_id=$1) ORDER BY created_at',
+      [id],
+    )
+  ).rows;
   data.telemetry = (
     await db.query(
       'SELECT event,subject_id,session_id,seconds,created_at FROM pilot_events WHERE user_id=$1',
@@ -251,6 +263,26 @@ export async function metrics(db: DB) {
       rate: eligible.length ? returned / eligible.length : null,
     };
   };
+  const arMissionEvents = events.filter(
+    (e) => e.event === 'mission_completed' && e.session_id,
+  );
+  const arCompletedBySession = new Map<string, number>();
+  for (const event of arMissionEvents)
+    arCompletedBySession.set(
+      event.session_id,
+      (arCompletedBySession.get(event.session_id) || 0) + 1,
+    );
+  const arCompletedSessions = new Set(
+    [...arCompletedBySession.entries()].filter(([, count]) => count >= 5).map(([id]) => id),
+  );
+  const arContinuedSessions = new Set(
+    events
+      .filter((e) => e.event === 'voluntary_continue' && e.session_id)
+      .map((e) => e.session_id),
+  );
+  const arQualifiedContinues = [...arContinuedSessions].filter((id) =>
+    arCompletedSessions.has(id),
+  ).length;
   return {
     today,
     timezone: zone,
@@ -266,6 +298,15 @@ export async function metrics(db: DB) {
     speaking_sessions: count('speaking_started'),
     speaking_completed: count('speaking_completed'),
     parent_dashboard_views: count('parent_dashboard_viewed'),
+    ar_sessions: new Set(
+      events.filter((e) => e.event === 'ar_mission_started' && e.session_id).map((e) => e.session_id),
+    ).size,
+    ar_missions_completed: arMissionEvents.length,
+    ar_completed_sets: arCompletedSessions.size,
+    ar_voluntary_continue: arQualifiedContinues,
+    ar_continue_rate: arCompletedSessions.size
+      ? arQualifiedContinues / arCompletedSessions.size
+      : null,
     day1: returns(1),
     day7: returns(7),
     subjects: ['math', 'physics', 'english'].map((id) => ({

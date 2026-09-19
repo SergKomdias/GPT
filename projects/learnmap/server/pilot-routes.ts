@@ -12,6 +12,7 @@ import {
   metrics,
   track,
   purgeExpired,
+  requireLearning,
 } from './pilot';
 export function pilotRoutes(app: Express, db: DB) {
   const a = auth(db);
@@ -128,6 +129,32 @@ export function pilotRoutes(app: Express, db: DB) {
         null,
         d.student + ':' + new Date().toISOString().slice(0, 13),
       );
+      return { ok: true };
+    }),
+  );
+  app.post(
+    '/api/telemetry/ar',
+    a,
+    role('student'),
+    run(async (req: any, res: any) => {
+      const d = z
+        .object({
+          event: z.enum([
+            'ar_mission_started',
+            'prediction_submitted',
+            'prediction_correct',
+            'mission_completed',
+            'next_mission_clicked',
+            'voluntary_continue',
+          ]),
+          session: z.string().min(1).max(120),
+          dedupe: z.string().min(1).max(240),
+          seconds: z.number().int().min(0).max(3600).default(0),
+        })
+        .parse(req.body);
+      const user = res.locals.user;
+      await requireLearning(db, user.id);
+      await track(db, user.id, d.event, 'physics', d.session, d.dedupe, d.seconds);
       return { ok: true };
     }),
   );

@@ -4,6 +4,8 @@ CREATE TABLE IF NOT EXISTS student_profiles (student_id text PRIMARY KEY REFEREN
 CREATE TABLE IF NOT EXISTS parent_profiles (parent_id text PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE);
 CREATE TABLE IF NOT EXISTS parent_student_links (parent_id text REFERENCES users(id) ON DELETE CASCADE, student_id text REFERENCES users(id) ON DELETE CASCADE, PRIMARY KEY(parent_id,student_id));
 CREATE TABLE IF NOT EXISTS parent_invites (token_hash text PRIMARY KEY, student_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE, expires_at timestamptz NOT NULL);
+CREATE TABLE IF NOT EXISTS family_messages (id text PRIMARY KEY, student_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE, sender_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE, body text NOT NULL CHECK(length(body) BETWEEN 1 AND 1000), created_at timestamptz NOT NULL DEFAULT now());
+CREATE INDEX IF NOT EXISTS family_messages_thread ON family_messages(student_id,created_at);
 CREATE TABLE IF NOT EXISTS subjects (id text PRIMARY KEY, title jsonb NOT NULL);
 CREATE TABLE IF NOT EXISTS curricula (id text PRIMARY KEY, subject_id text NOT NULL REFERENCES subjects(id), title text NOT NULL, grade integer, cefr text CHECK(cefr IN ('A1','A2','B1','B2','C1')));
 CREATE TABLE IF NOT EXISTS topics (id text PRIMARY KEY, curriculum_id text NOT NULL REFERENCES curricula(id), title jsonb NOT NULL);

@@ -137,6 +137,22 @@ export function Today() {
               ))}
             </div>
           </section>
+          <section className="ar-lab-teaser">
+            <div>
+              <span className="ar-kicker">NEW · AR LAB</span>
+              <h2>{t('Land the drone', 'Посади дрон')}</h2>
+              <p>
+                {t(
+                  'Five short kinematics missions through your phone camera. Predict first, then watch the result.',
+                  'П’ять коротких місій з кінематики через камеру телефона. Спочатку прогноз — потім результат.',
+                )}
+              </p>
+            </div>
+            <Link className="button" to="/ar-lab">
+              {t('Open AR Lab', 'Відкрити AR Lab')}
+              <Arrow />
+            </Link>
+          </section>
         </div>
         <section className="panel snapshot-panel">
           <div className="section-heading">

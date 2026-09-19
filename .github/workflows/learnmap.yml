@@ -1,0 +1,36 @@
+name: LearnMap CI
+
+on:
+  pull_request:
+    paths:
+      - 'projects/learnmap/**'
+      - '.github/workflows/learnmap.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'projects/learnmap/**'
+      - '.github/workflows/learnmap.yml'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: projects/learnmap
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: projects/learnmap/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm build
