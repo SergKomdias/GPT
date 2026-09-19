@@ -513,7 +513,7 @@ export function createApp(db: DB, provider?: AIService) {
     authenticated,
     role('student'),
     async (req: any, res: any) => {
-      const answer = z.number().int().min(0).max(3).parse(req.body.answer);
+      const answer = z.number().int().min(-1).max(3).parse(req.body.answer);
       const session = await owned('diagnostic_sessions', req.params.id, res.locals.user.id);
       if (session.completed) fail('Already completed');
       await requireActive(db, res.locals.user.id, session.subject_id);
