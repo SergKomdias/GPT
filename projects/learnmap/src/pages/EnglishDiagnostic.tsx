@@ -199,6 +199,7 @@ export function EnglishDiagnostic() {
               value={choice}
               onChange={setChoice}
               disabled={busy || (task.kind === 'listening' && !listened)}
+              allowUnknown
             />
           ) : (
             <>
