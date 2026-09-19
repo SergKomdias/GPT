@@ -272,6 +272,12 @@ export function PilotMetrics() {
     ['Hints per lesson', data.hints_per_lesson?.toFixed(1) ?? '—'],
     ['Speaking started / completed', `${data.speaking_sessions} / ${data.speaking_completed}`],
     ['Parent dashboard views', data.parent_dashboard_views],
+    ['AR sessions', data.ar_sessions ?? 0],
+    ['AR missions completed', data.ar_missions_completed ?? 0],
+    [
+      'AR voluntary continue',
+      (data.ar_voluntary_continue ?? 0) + ' / ' + (data.ar_completed_sets ?? 0) + ' (' + percent(data.ar_continue_rate ?? null) + ')',
+    ],
     ['Day-1 return', `${data.day1.returned} / ${data.day1.eligible} (${percent(data.day1.rate)})`],
     ['Day-7 return', `${data.day7.returned} / ${data.day7.eligible} (${percent(data.day7.rate)})`],
   ];
