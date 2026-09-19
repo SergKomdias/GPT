@@ -78,6 +78,13 @@ export function englishAssessmentRoutes(
       state.phase === 'complete',
     ]);
   }
+  app.post(prefix + '/translate', async (req, res) => {
+    const student = res.locals.user.id;
+    await guard(student);
+    const word = z.string().trim().min(1).max(40).parse(req.body.word);
+    res.json({ word, translation: await ai.translateEnglishWord(word) });
+  });
+
   app.post(prefix, async (_req, res) => {
     const out = await tx(async () => {
       const student = res.locals.user.id;
