@@ -22,6 +22,7 @@ export function Shell({ children }: { children?: React.ReactNode }) {
           ['/today', Home, t('Today', 'Сьогодні')],
           ['/map', Network, 'LearnMap'],
           ['/subjects', BookOpen, t('Subjects', 'Предмети')],
+          ['/ar-lab', Network, 'AR Lab'],
           ['/progress', ChartNoAxesColumn, t('Progress', 'Прогрес')],
         ]
       : user?.role === 'parent'
@@ -128,7 +129,7 @@ export function Shell({ children }: { children?: React.ReactNode }) {
           </span>
           <small>
             {config.ai === 'mock' ? t('AI: demo adapter', 'AI: демоадаптер') : 'AI: OpenAI'} ·
-            LearnMap 0.3
+            LearnMap 0.3 · {config.build || 'backend-legacy'}
           </small>
         </footer>
       </div>
