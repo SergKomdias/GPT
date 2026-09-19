@@ -204,7 +204,7 @@ export function englishAssessmentRoutes(
         else
           z.number()
             .int()
-            .min(0)
+            .min(-1)
             .max((task.options?.length || 4) - 1)
             .parse(answer);
         correct = gradeEnglish(task, answer);
