@@ -103,12 +103,12 @@ export function ARLab() {
   function choose(id: string) {
     if (stage !== 'question') return;
     setChoice(id);
-    void trackEvent('prediction_submitted', mission.id + ':prediction');
-    if (isCorrect(mission, id)) void trackEvent('prediction_correct', mission.id + ':correct');
   }
 
   function launch() {
     if (!choice || stage !== 'question') return;
+    void trackEvent('prediction_submitted', mission.id + ':prediction');
+    if (isCorrect(mission, choice)) void trackEvent('prediction_correct', mission.id + ':correct');
     setStage('running');
     setProgress(0);
     const target = simulatedTravelRatio(mission);
@@ -150,6 +150,7 @@ export function ARLab() {
   function continueVoluntarily() {
     void trackEvent('voluntary_continue', 'main:continue');
     setBonus(true);
+    setScore(0);
     setIndex(0);
     setChoice('');
     setProgress(0);
