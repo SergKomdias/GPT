@@ -22,7 +22,7 @@ const cleanup = setInterval(
   3600000,
 );
 cleanup.unref();
-const port = Number(process.env.PORT || 3100);
+const port = Number(process.env.PORT || (process.env.NODE_ENV === 'production' ? 3100 : 3110));
 const server = createApp(db).listen(port, process.env.HOST || '127.0.0.1', () =>
   console.log(`LearnMap API http://127.0.0.1:${port} · ${process.env.AI_PROVIDER || 'mock'} AI`),
 );

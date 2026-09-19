@@ -22,6 +22,7 @@ export function Shell({ children }: { children?: React.ReactNode }) {
           ['/today', Home, t('Today', 'Сьогодні')],
           ['/map', Network, 'LearnMap'],
           ['/subjects', BookOpen, t('Subjects', 'Предмети')],
+          ['/ar-lab', Network, 'AR Lab'],
           ['/progress', ChartNoAxesColumn, t('Progress', 'Прогрес')],
         ]
       : user?.role === 'parent'
@@ -91,6 +92,14 @@ export function Shell({ children }: { children?: React.ReactNode }) {
         </div>
       </aside>
       <div className="workspace">
+        {config.build !== 'loading' && !config.build ? (
+          <div className="runtime-warning">
+            {t(
+              'Old LearnMap backend is connected. Stop old server windows and restart pnpm dev.',
+              'Підключено старий backend LearnMap. Закрийте старі вікна сервера й перезапустіть pnpm dev.',
+            )}
+          </div>
+        ) : null}
         <header className="topbar">
           <span>
             {t('Workspace', 'Мій простір')} <i>/</i>{' '}
@@ -128,7 +137,7 @@ export function Shell({ children }: { children?: React.ReactNode }) {
           </span>
           <small>
             {config.ai === 'mock' ? t('AI: demo adapter', 'AI: демоадаптер') : 'AI: OpenAI'} ·
-            LearnMap 0.3
+            LearnMap 0.3 · {config.build || 'backend-legacy'}
           </small>
         </footer>
       </div>

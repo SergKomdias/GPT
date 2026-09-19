@@ -141,6 +141,48 @@ describe.sequential('LearnMap v3 engagement safeguards', () => {
     expect(saved.weight).toBe(0.25);
   });
 
+  it('advances through repeated I-dont-know answers without looping, including short tasks', async () => {
+    const student = await account();
+    await db.query("INSERT INTO student_subjects(student_id,subject_id) VALUES($1,'english')", [
+      student.id,
+    ]);
+    let current = await req('/english-diagnostic', 'POST', {}, student.cookie);
+    expect(current.status).toBe(200);
+    const seen = new Set<string>();
+    let sawShort = false;
+
+    for (let i = 0; i < 8 && !current.data.completed; i++) {
+      const task = current.data.task;
+      expect(task).toBeTruthy();
+      expect(seen.has(task.id)).toBe(false);
+      seen.add(task.id);
+      if (task.kind === 'short') sawShort = true;
+
+      const result = await req(
+        '/english-diagnostic/' + current.data.id + '/answer',
+        'POST',
+        {
+          taskId: task.id,
+          answer: task.kind === 'choice' ? -1 : '',
+          unknown: true,
+        },
+        student.cookie,
+      );
+      expect(result.status).toBe(200);
+      expect(result.data.correct).toBe(false);
+      current = result;
+    }
+
+    expect(seen.size).toBeGreaterThanOrEqual(5);
+    expect(sawShort).toBe(true);
+  });
+
+  it('exposes the v3 backend build marker', async () => {
+    const config = await req('/config');
+    expect(config.status).toBe(200);
+    expect(config.data.build).toBe('v3.1-hotfix');
+  });
+
   it('allows linked family messaging and blocks an unrelated parent', async () => {
     const student = await account();
     const parent = await account('parent');

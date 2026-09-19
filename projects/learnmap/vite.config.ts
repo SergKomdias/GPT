@@ -4,6 +4,6 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    proxy: { '/api': `http://127.0.0.1:${process.env.LEARNMAP_API_PORT || 3100}` },
+    proxy: { '/api': `http://127.0.0.1:${process.env.LEARNMAP_API_PORT || 3110}` },
   },
 });

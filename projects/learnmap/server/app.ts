@@ -218,6 +218,7 @@ export function createApp(db: DB, provider?: AIService) {
   route('get', '/api/config', async (_req: any, res: any) =>
     res.json({
       ai: ai.provider,
+      build: 'v3.1-hotfix',
       pilot: pilotMode(),
       invite_required: !!process.env.PILOT_INVITE_CODE,
       demo: process.env.ENABLE_DEMO !== 'false',

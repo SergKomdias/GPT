@@ -8,7 +8,7 @@ interface Context {
   setLang: (l: Language) => void;
   refresh: () => Promise<void>;
   t: (en: string, uk: string) => string;
-  config: { ai: string; demo: boolean; pilot?: boolean; invite_required?: boolean };
+  config: { ai: string; demo: boolean; pilot?: boolean; invite_required?: boolean; build?: string };
   logout: () => Promise<void>;
 }
 const AppContext = createContext<Context>(null!);
@@ -18,7 +18,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [lang, setLanguage] = useState<Language>(() =>
     localStorage.getItem('learnmap-language') === 'en' ? 'en' : 'uk',
   );
-  const [config, setConfig] = useState({ ai: 'mock', demo: false });
+  const [config, setConfig] = useState({ ai: 'mock', demo: false, build: 'loading' });
   useEffect(() => {
     document.documentElement.lang = lang;
     document.title =

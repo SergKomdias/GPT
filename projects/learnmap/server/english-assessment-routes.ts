@@ -167,6 +167,7 @@ export function englishAssessmentRoutes(
     taskId: string,
     answer: unknown,
     voice = false,
+    unknown = false,
   ) {
     const key = id + ':' + taskId;
     if (busy.has(key)) fail('Відповідь уже обробляється. Зачекайте.', 409);
@@ -231,14 +232,18 @@ export function englishAssessmentRoutes(
       } else {
         if (task.kind === 'listening' && read.s.state.audioReady !== task.id)
           fail('Спочатку прослухайте аудіо.');
-        if (task.kind === 'short') z.string().trim().min(1).max(1000).parse(answer);
-        else
-          z.number()
-            .int()
-            .min(-1)
-            .max((task.options?.length || 4) - 1)
-            .parse(answer);
-        correct = gradeEnglish(task, answer);
+        if (unknown) {
+          correct = false;
+        } else {
+          if (task.kind === 'short') z.string().trim().min(1).max(1000).parse(answer);
+          else
+            z.number()
+              .int()
+              .min(-1)
+              .max((task.options?.length || 4) - 1)
+              .parse(answer);
+          correct = gradeEnglish(task, answer);
+        }
         if (task.kind === 'listening' && read.s.state.assisted?.includes(task.id)) weight = 0.25;
       }
       return await tx(async () => {
@@ -262,7 +267,7 @@ export function englishAssessmentRoutes(
           [
             id,
             task.id,
-            String(answer),
+            unknown ? '[unknown]' : String(answer),
             assessment ? JSON.stringify(assessment) : null,
             JSON.stringify(observation),
           ],
@@ -290,6 +295,8 @@ export function englishAssessmentRoutes(
         String(req.params.id),
         z.string().parse(req.body.taskId),
         req.body.answer,
+        false,
+        z.boolean().optional().default(false).parse(req.body.unknown),
       ),
     ),
   );

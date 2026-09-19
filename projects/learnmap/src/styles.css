@@ -3287,3 +3287,20 @@ blockquote {
     grid-template-columns: 1fr;
   }
 }
+
+
+.runtime-warning {
+  margin: 12px 24px 0;
+  padding: 11px 14px;
+  border: 1px solid #e6b6a8;
+  border-radius: 9px;
+  background: #fff1ed;
+  color: #8a2f1f;
+  font-size: 12px;
+  font-weight: 650;
+}
+@media (max-width: 700px) {
+  .runtime-warning {
+    margin: 10px 20px 0;
+  }
+}
