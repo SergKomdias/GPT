@@ -115,7 +115,12 @@ describe.sequential('LearnMap v3 engagement safeguards', () => {
       student.cookie,
     );
     expect(translated.status).toBe(200);
-    expect(translated.data).toEqual({ word: 'however', translation: 'однак' });
+    expect(translated.data).toMatchObject({
+      word: 'however',
+      translation: 'однак',
+      assisted: false,
+      weight: 1,
+    });
   });
 
   it('allows linked family messaging and blocks an unrelated parent', async () => {
