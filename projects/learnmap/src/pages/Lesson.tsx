@@ -6,6 +6,7 @@ import { api } from '../services/api';
 import { useApp } from '../hooks/useApp';
 import { Heading, Loading, Notice, Arrow } from '../components/UI';
 import { Question } from '../features/learning/Question';
+import { MicroBreak } from '../components/MicroBreak';
 export function Lesson() {
   const { skill } = useParams();
   const { t, lang, user } = useApp();
@@ -17,6 +18,8 @@ export function Lesson() {
   const [hint, setHint] = useState('');
   const [feedback, setFeedback] = useState<any>(null);
   const [pending, setPending] = useState<any>(null);
+  const [breakPending, setBreakPending] = useState<any>(null);
+  const [breakShown, setBreakShown] = useState(false);
   useEffect(() => {
     void api('/lesson', 'POST', { skill, lang: learningLang })
       .then(setState)
@@ -24,11 +27,17 @@ export function Lesson() {
   }, [skill, learningLang]);
   const next = async () => {
     if (pending) {
-      setState(pending);
+      const nextState = pending;
       setPending(null);
       setFeedback(null);
       setHint('');
       setAnswer(null);
+      if (!breakShown && nextState.index >= 5 && !nextState.completed) {
+        setBreakShown(true);
+        setBreakPending(nextState);
+        return;
+      }
+      setState(nextState);
       return;
     }
     setBusy(true);
@@ -54,6 +63,20 @@ export function Lesson() {
       setBusy(false);
     }
   };
+  if (breakPending) {
+    return (
+      <div className="narrow">
+        <MicroBreak
+          count={5}
+          onDone={() => {
+            setState(breakPending);
+            setBreakPending(null);
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <>
       <Heading
