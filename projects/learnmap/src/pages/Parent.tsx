@@ -9,6 +9,7 @@ import { api } from '../services/api';
 import { Heading, Notice, Loading, Empty, MasteryBar, Arrow } from '../components/UI';
 import { Analytics } from '../features/progress/Analytics';
 import { KnowledgeGraph } from '../components/KnowledgeGraph';
+import { FamilyMessages } from '../components/FamilyMessages';
 import { minutes } from '../utils/format';
 function ChildDashboard({ id }: { id: string }) {
   const { data, error, refresh } = useSnapshot(id);
@@ -295,6 +296,7 @@ export function Parent() {
       {child && (
         <PilotFeedback key={child + location.pathname} screen="parent_report" context={child} />
       )}
+      {child && <FamilyMessages key={child + '-messages'} student={child} />}
       {loading ? (
         <Loading />
       ) : child ? (
