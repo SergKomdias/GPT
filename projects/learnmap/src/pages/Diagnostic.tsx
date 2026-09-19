@@ -105,6 +105,7 @@ function SubjectDiagnostic() {
             value={answer}
             onChange={setAnswer}
             disabled={busy}
+            allowUnknown
           />
           <div className="practice-footer">
             <span>
