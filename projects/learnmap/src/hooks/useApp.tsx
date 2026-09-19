@@ -8,7 +8,7 @@ interface Context {
   setLang: (l: Language) => void;
   refresh: () => Promise<void>;
   t: (en: string, uk: string) => string;
-  config: { ai: string; demo: boolean; pilot?: boolean; invite_required?: boolean };
+  config: { ai: string; demo: boolean; pilot?: boolean; invite_required?: boolean; build?: string };
   logout: () => Promise<void>;
 }
 const AppContext = createContext<Context>(null!);
