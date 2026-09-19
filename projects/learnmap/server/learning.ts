@@ -2,6 +2,9 @@ import { randomUUID } from 'node:crypto';
 import type { DB } from './db';
 import { chooseMathDiagnostic } from './math-diagnostic';
 import { mathLevels } from './math-content';
+import { cognitiveDemand } from '../shared/cognitive-demand';
+import { englishMap } from './english-placement';
+import { physicsCurriculum, eligiblePhysics } from './physics-curriculum';
 import {
   masteryStatus,
   updateScore,
@@ -14,6 +17,9 @@ import {
 } from '../shared/learning';
 export { updateScore } from '../shared/learning';
 export const status = masteryStatus;
+const requiresProductiveEvidence = (skill: any) =>
+  skill.subject_id === 'english' &&
+  ['writing', 'speaking', 'listening'].includes(skill.strand_id || skill.id);
 export function priority(s: any, all: any[], now = Date.now()) {
   if (
     all.some(
@@ -31,6 +37,8 @@ export async function skillsFor(db: DB, id: string) {
     [id],
   );
   const edges = (await db.query('SELECT * FROM skill_dependencies')).rows;
+  // Old recognition scores remain historical data, never current productive/audio ability.
+  for (const skill of rows) if (requiresProductiveEvidence(skill)) skill.confidence_score = 0;
   return rows.map((s) => ({
     ...s,
     status: masteryStatus(s),
@@ -121,6 +129,12 @@ export function buildPlan(skills: any[], subjects: any[], minutes: number, now: 
 }
 export async function snapshot(db: DB, id: string, now = new Date()) {
   const allSkills = await skillsFor(db, id);
+  const englishState = (
+    await db.query(
+      "SELECT state FROM english_assessment_sessions WHERE student_id=$1 AND state->>'deleted' IS DISTINCT FROM 'true' ORDER BY created_at DESC LIMIT 1",
+      [id],
+    )
+  ).rows[0]?.state;
   const profile = (
     await db.query(
       'SELECT u.id,u.name,p.* FROM users u JOIN student_profiles p ON p.student_id=u.id WHERE u.id=$1',
@@ -138,7 +152,14 @@ export async function snapshot(db: DB, id: string, now = new Date()) {
     selection_status: s.active ? 'active' : s.started_at ? 'paused' : 'not-selected',
   }));
   const active = new Set(subjectSelections.filter((s) => s.active).map((s) => s.id));
-  const skills = allSkills.filter((s) => active.has(s.subject_id));
+  const curriculumId = profile.physics_curriculum || physicsCurriculum(profile.country);
+  const physicsAllowed = curriculumId
+    ? eligiblePhysics(profile.country, profile.grade, curriculumId).skills.map((s) => s.id)
+    : [];
+  const skills = allSkills.filter(
+    (s) =>
+      active.has(s.subject_id) && (s.subject_id !== 'physics' || physicsAllowed.includes(s.id)),
+  );
   for (const s of skills) {
     const children = skills.filter((c) => c.strand_id === s.id);
     if (children.length) {
@@ -179,7 +200,10 @@ export async function snapshot(db: DB, id: string, now = new Date()) {
   ).rows;
   const reports = subjects.map((s) => {
     const group = skills.filter(
-      (k) => k.subject_id === s.id && !skills.some((c) => c.strand_id === k.id),
+      (k) =>
+        k.subject_id === s.id &&
+        !requiresProductiveEvidence(k) &&
+        !skills.some((c) => c.strand_id === k.id),
     );
     const comparable = group
       .map((k) => {
@@ -235,6 +259,8 @@ export async function snapshot(db: DB, id: string, now = new Date()) {
     };
   });
   return {
+    englishAssessment: englishMap(englishState?.observations || []),
+    physicsCurriculum: curriculumId,
     profile,
     skills,
     subjects,
@@ -279,6 +305,37 @@ export async function evidence(
   const profile = (
     await db.query('SELECT timezone FROM student_profiles WHERE student_id=$1', [student])
   ).rows[0];
+  const assessedSkill = (
+    await db.query('SELECT subject_id,strand_id,id FROM skills WHERE id=$1', [skill])
+  ).rows[0];
+  if (
+    assessedSkill?.subject_id === 'english' &&
+    ['writing', 'speaking', 'listening'].includes(assessedSkill.strand_id || assessedSkill.id)
+  ) {
+    await db.query(
+      'INSERT INTO student_skill_mastery(id,student_id,skill_id,hints_used,time_spent_seconds,attempts_count) VALUES($1,$2,$3,$4,$5,1) ON CONFLICT(student_id,skill_id) DO UPDATE SET hints_used=student_skill_mastery.hints_used+$4,time_spent_seconds=student_skill_mastery.time_spent_seconds+$5,attempts_count=student_skill_mastery.attempts_count+1',
+      [randomUUID(), student, skill, hints, seconds],
+    );
+    await db.query(
+      'INSERT INTO skill_evidence(id,student_id,skill_id,session_id,question_id,correct,independent,local_day,retained,long_retained,before_state,after_state,created_at) VALUES($1,$2,$3,$4,$5,$6,false,$7,false,false,$8,$8,$9)',
+      [
+        randomUUID(),
+        student,
+        skill,
+        sessionId,
+        questionId,
+        correct,
+        localDay(now, profile.timezone),
+        JSON.stringify(old),
+        now,
+      ],
+    );
+    await db.query(
+      'INSERT INTO learning_events(id,student_id,skill_id,kind,before_score,after_score,seconds,xp,session_id) VALUES($1,$2,$3,$4,$5,$5,$6,3,$7)',
+      [randomUUID(), student, skill, kind, old.mastery_score, seconds, sessionId],
+    );
+    return { before: old.mastery_score, after: old.mastery_score };
+  }
   const day = localDay(now, profile.timezone),
     history = (
       await db.query(
@@ -423,7 +480,8 @@ export function diagnosticMetrics(questions: any[], skills: any[], state: any) {
 }
 export function chooseDiagnostic(questions: any[], skills: any[], state: any, correct?: boolean) {
   if (diagnosticMetrics(questions, skills, state).complete) return null;
-  if (state.algorithm === 'math-v3') return chooseMathDiagnostic(questions, skills, state, correct);
+  if (['math-v3', 'physics-v4'].includes(state.algorithm))
+    return chooseMathDiagnostic(questions, skills, state, correct);
   const leaves = skills.filter((s) => !skills.some((c) => c.strand_id === s.id)),
     remaining = questions.filter(
       (q) => !state.asked.includes(q.id) && leaves.some((s) => s.id === q.skill_id),
@@ -465,6 +523,16 @@ export const publicQuestion = (q: any) => ({
   prompt: q.prompt,
   options: q.options,
   difficulty: q.difficulty,
+  ...(/^(math-v3|physics-v4)-/.test(q.id)
+    ? { cognitive_key: cognitiveDemand[q.difficulty - 1].key }
+    : {}),
+  ...(q.id.startsWith('physics-v4-')
+    ? {
+        cognitive_level: cognitiveDemand[q.difficulty - 1].label,
+        max_difficulty: 5,
+        presentation: q.presentation,
+      }
+    : {}),
   ...(q.id.startsWith('math-v3-')
     ? { cognitive_level: mathLevels[q.difficulty - 1], max_difficulty: 5 }
     : {}),

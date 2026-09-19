@@ -3,6 +3,7 @@ import { Mic, Square, Volume2, Send, MessageCircle } from 'lucide-react';
 import { api, transcribe, speak, stopVoice } from '../services/api';
 import { useRecorder } from '../hooks/useRecorder';
 import { useApp } from '../hooks/useApp';
+import { Link } from 'react-router-dom';
 import { Heading, Notice } from '../components/UI';
 const modes = ['Conversation', 'Role Play', 'Topic Practice'];
 const topics: Record<string, string[]> = {
@@ -87,6 +88,10 @@ export function Speaking() {
           'Розмова починається з маленької сміливості.',
         )}
       />
+      <p>
+        Speaking Practice: розмова й тренування без автоматичного підвищення мовного рівня.{' '}
+        <Link to="/diagnostic/english">Пройти English Diagnostic зі Speaking Assessment</Link>
+      </p>
       <div className="speaking-layout">
         <aside className={'speaking-settings ' + (started ? 'in-session' : '')}>
           <h3>{t('How would you like to practise?', 'Як хочеш практикуватися?')}</h3>
@@ -156,8 +161,8 @@ export function Speaking() {
             </button>
           ) : null}
           <p>
-            Conversation = practice activity. Speaking Assessment — planned, unavailable in 0.3. No
-            pronunciation score.
+            Conversation — навчальна практика. Окреме оцінювання мовної відповіді доступне в English
+            Diagnostic. Вимова за транскриптом не оцінюється.
           </p>
           <div className="privacy-note">
             {t(

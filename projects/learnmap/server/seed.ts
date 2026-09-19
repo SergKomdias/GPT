@@ -3,7 +3,15 @@ import type { DB } from './db';
 import { seedSkills, sampleQuestion, bi } from './content';
 import { hashPassword } from './auth';
 import { mathDefinitions } from './math-content';
+import { physicsDefinitions } from './physics-curriculum';
+import { physicsQuestion } from './physics-content';
+import { englishPlacementTasks } from './english-placement-content';
 export async function seed(db: DB) {
+  for (const task of englishPlacementTasks)
+    await db.query(
+      'INSERT INTO english_assessment_items(id,content) VALUES($1,$2) ON CONFLICT DO NOTHING',
+      [task.id, JSON.stringify(task)],
+    );
   for (const [id, en, uk] of [
     ['math', 'Mathematics', 'Математика'],
     ['physics', 'Physics', 'Фізика'],
@@ -58,7 +66,7 @@ export async function seed(db: DB) {
         pos,
         kind,
       ]);
-    for (let n = 0; n < (s.subject === 'math' ? 8 : 9); n++) {
+    for (let n = 0; n < (s.subject === 'math' ? 8 : s.subject === 'physics' ? 5 : 9); n++) {
       const q = sampleQuestion(s.id, n);
       await db.query(
         'INSERT INTO questions VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT DO NOTHING',
@@ -74,6 +82,11 @@ export async function seed(db: DB) {
         ],
       );
       await db.query('INSERT INTO diagnostic_questions VALUES($1) ON CONFLICT DO NOTHING', [q.id]);
+      if (s.subject === 'physics')
+        await db.query(
+          'UPDATE questions SET presentation=$2 WHERE id=$1 AND presentation IS NULL',
+          [q.id, JSON.stringify(physicsQuestion(s.id, n + 1)!.presentation)],
+        );
     }
   }
   for (const s of seedSkills)
@@ -103,7 +116,7 @@ export async function seed(db: DB) {
     !(await db.query("SELECT 1 FROM schema_migrations WHERE id='sample-distractors-v2'")).rows
       .length
   ) {
-    for (const skill of seedSkills.filter((s) => s.subject !== 'math'))
+    for (const skill of seedSkills.filter((s) => s.subject === 'english'))
       for (let n = 0; n < 9; n++) {
         const q = sampleQuestion(skill.id, n);
         await db.query('UPDATE questions SET options=$2,answer=$3 WHERE id=$1', [
@@ -165,7 +178,7 @@ export async function seed(db: DB) {
   if (
     !(await db.query("SELECT 1 FROM schema_migrations WHERE id='learning-v2-content'")).rows.length
   ) {
-    for (const skill of seedSkills.filter((s) => s.subject !== 'math'))
+    for (const skill of seedSkills.filter((s) => s.subject === 'english'))
       for (let n = 0; n < 9; n++) {
         const q = sampleQuestion(skill.id, n);
         await db.query(
@@ -181,5 +194,22 @@ export async function seed(db: DB) {
         );
       }
     await db.query("INSERT INTO schema_migrations(id) VALUES('learning-v2-content')");
+  }
+  if (
+    !(await db.query("SELECT 1 FROM schema_migrations WHERE id='physics-diagnostic-v4'")).rows
+      .length
+  ) {
+    for (const [id, title, grade, branch, pre] of physicsDefinitions) {
+      await db.query(
+        "UPDATE skills SET title=$2,grade_level=$3,diagnostic_branch=$4,review_status='draft' WHERE id=$1",
+        [id, JSON.stringify(bi(title, title)), grade, branch],
+      );
+      await db.query('DELETE FROM skill_dependencies WHERE skill_id=$1', [id]);
+      for (const p of pre) await db.query('INSERT INTO skill_dependencies VALUES($1,$2)', [id, p]);
+      await db.query('DELETE FROM diagnostic_questions WHERE question_id=ANY($1::text[])', [
+        Array.from({ length: 9 }, (_, n) => `${id}-${n}`),
+      ]);
+    }
+    await db.query("INSERT INTO schema_migrations(id) VALUES('physics-diagnostic-v4')");
   }
 }

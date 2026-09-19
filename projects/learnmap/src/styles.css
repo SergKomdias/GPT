@@ -2726,3 +2726,47 @@ blockquote {
     padding: 18px;
   }
 }
+
+.english-assessment-map {
+  grid-column: 1 / -1;
+  padding: 24px;
+}
+.assessment-strands {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+.assessment-strand {
+  border-top: 1px solid #dce3df;
+  padding-top: 12px;
+  overflow-wrap: anywhere;
+}
+.reading-passage {
+  line-height: 1.8;
+  padding: 20px;
+  background: #f3f6ef;
+  border-radius: 12px;
+  margin: 20px 0;
+}
+.audio-assessment {
+  display: grid;
+  gap: 12px;
+  margin: 20px 0;
+}
+.audio-assessment audio {
+  max-width: 100%;
+}
+.physics-graph {
+  margin: 20px 0;
+}
+.physics-graph svg {
+  display: block;
+  width: 100%;
+  max-width: 500px;
+}
+.assessment-json {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 500px;
+  overflow: auto;
+}

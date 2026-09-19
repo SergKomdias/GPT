@@ -20,7 +20,14 @@ test('Ukrainian grade-10 diagnostic increases cognitive difficulty and renders a
     const authored = Array.from({ length: 8 }, (_, i) => mathQuestion(question.skill_id, i)!).find(
       (q) => q.id === question.id,
     )!;
-    await page.getByLabel(authored.options[authored.answer], { exact: false }).check();
+    const labels = await page
+      .getByRole('radio')
+      .evaluateAll((inputs) => inputs.map((input) => input.closest('label')!.textContent!.trim()));
+    const index = labels.findIndex(
+      (label) => label.slice(1).trim() === authored.options[authored.answer],
+    );
+    expect(index).toBeGreaterThanOrEqual(0);
+    await page.getByRole('radio').nth(index).check();
     const next = page.waitForResponse(
       (r) => r.url().includes('/diagnostic/') && r.url().endsWith('/answer'),
     );

@@ -12,7 +12,7 @@ Identity remains users, auth_sessions, student_profiles, parent_profiles, parent
 
 student_subjects stores student_id, subject_id, active, started_at, paused_at with a composite primary key and active-owner index. New onboarding must select at least one subject; updates are transactional. Existing onboarded learners retain their original subjects. Pausing changes only active/paused_at, and resuming restores access to the same history.
 
-Content retains subjects/curricula/topics/skills/dependencies/questions. skills.strand_id groups English subskills under six strands. Coverage counts 69 leaf skills: Math 25, Physics 18, English 26. Root English rows and old answers are retained for compatibility, not counted twice.
+Content retains subjects/curricula/topics/skills/dependencies/questions. skills.strand_id groups English practice subskills under six strands. Physics now has 30 skills filtered by the learner's country/grade curriculum; Mathematics has 25 and the existing English practice map has 26 subskills. English CEFR assessment coverage is a separate six-domain calculation. Root English rows and old answers remain for compatibility.
 
 Mathematics migration `math-difficulty-five-levels` expands the question CHECK constraint from 1–3 to 1–5. Skills gain `grade_level` and `diagnostic_branch`; `math-diagnostic-v3` seeds 200 versioned math questions and updates prerequisites once. Legacy bundled math question rows and historical answers remain unchanged, but their `diagnostic_questions` entries are retired. New sessions select active diagnostic entries; existing legacy sessions retain their original state/routing. New and revised content stays draft until reviewed. Re-running seed preserves later approvals. See [Mathematics Diagnostic](docs/MATHEMATICS-DIAGNOSTIC.uk.md).
 
@@ -25,6 +25,12 @@ The learning-v2 seed migration updates the bundled sample questions once, adds s
 daily_plans uses the student’s local date. weekly_reports uses their local Monday. UI history returns up to 500 events; analytics computes over all relevant history. Before/after weekly estimates use the same skills with evidence at both boundaries; newly assessed skills affect coverage, not a misleading gain.
 
 Foreign keys, unique constraints and ownership checks remain active. External PostgreSQL connection setup, encrypted transport, backup/restore, long-history aggregation and multi-worker load behavior still require staging verification.
+
+## Physics / English diagnostic additions
+
+`questions.presentation` stores graph/circuit metadata; `student_profiles.physics_curriculum` selects an explicit curriculum. `physics-diagnostic-v4` updates 30 skill definitions and prerequisite edges once, adds 150 versioned questions and retires old diagnostic registry entries without changing historical questions/answers. Re-seeding preserves reviewed content.
+
+`english_assessment_items` contains 116 draft/reviewed/approved authored items. `english_assessment_sessions` holds owner, routing/evidence JSONB and completion. `english_assessment_answers` has a composite session/task primary key, original answer, structured assessment, modality observation and timestamp. Account deletion cascades; exports include both tables. Productive text is erased by transcript deletion or the configured Speaking retention window; the associated English map is invalidated and session closed to reject late provider results. Objective answer rows remain historical. No raw microphone audio is persisted. Full rules: [diagnostics](docs/DIAGNOSTICS.uk.md).
 
 
 ## Pilot 0.3

@@ -76,14 +76,17 @@ export function Listening() {
               <Notice>
                 {result.correct
                   ? t(
-                      'Correct! Listening mastery updated.',
-                      'Правильно! Рівень аудіювання оновлено.',
+                      'Correct! Listening practice saved.',
+                      'Правильно! Практику аудіювання збережено.',
                     )
                   : t(
                       'They built a solar-powered car. Your practice is saved.',
                       'Вони збудували автомобіль на сонячній енергії. Практику збережено.',
                     )}{' '}
-                {result.change.before}% → {result.change.after}%
+                {t(
+                  'CEFR assessment is available in English Diagnostic.',
+                  'Оцінювання CEFR доступне в English Diagnostic.',
+                )}
               </Notice>
               <Link to="/map" className="button">
                 {t('View LearnMap', 'Відкрити LearnMap')}

@@ -10,7 +10,7 @@ export default defineConfig({
       env: {
         PORT: '3101',
         APP_ORIGIN: 'http://127.0.0.1:5174',
-        DATA_DIR: '.data/e2e',
+        DATA_DIR: 'memory://',
         ENABLE_DEMO: 'true',
         AI_PROVIDER: 'mock',
       },

@@ -4,7 +4,12 @@ import { useApp } from '../hooks/useApp';
 import { api } from '../services/api';
 import { Heading, Notice, Loading, Arrow } from '../components/UI';
 import { Question } from '../features/learning/Question';
+import { EnglishDiagnostic } from './EnglishDiagnostic';
 export function Diagnostic() {
+  const { subject } = useParams();
+  return subject === 'english' ? <EnglishDiagnostic /> : <SubjectDiagnostic />;
+}
+function SubjectDiagnostic() {
   const { subject } = useParams();
   const { t, lang } = useApp();
   const [state, setState] = useState<any>(null);

@@ -18,6 +18,8 @@ import {
 } from './domain';
 import { validTimezone } from '../shared/learning';
 import { AIService } from './ai';
+import { eligiblePhysics } from './physics-curriculum';
+import { englishAssessmentRoutes } from './english-assessment-routes';
 import { pilotRoutes } from './pilot-routes';
 import { pilotMode, requireLearning, track, trackSubjects, privacy } from './pilot';
 const credentials = z.object({
@@ -268,6 +270,7 @@ export function createApp(db: DB, provider?: AIService) {
     res.json({ role: r });
   });
   const authenticated = auth(db);
+  englishAssessmentRoutes(app, db, ai, authenticated);
   route('get', '/api/me', authenticated, async (_req: any, res: any) => {
     const u = res.locals.user;
     const p = (await db.query('SELECT * FROM student_profiles WHERE student_id=$1', [u.id]))
@@ -297,6 +300,7 @@ export function createApp(db: DB, provider?: AIService) {
         age: z.number().int().min(5).max(100),
         grade: z.number().int().min(1).max(12),
         country: z.string().trim().min(1).max(80),
+        physics_curriculum: z.enum(['UA', 'international']).nullable().optional(),
         learning_language: z.enum(['en', 'uk']),
         interface_language: z.enum(['en', 'uk']),
         subjects: z
@@ -308,6 +312,11 @@ export function createApp(db: DB, provider?: AIService) {
       })
       .parse(req.body);
     await db.query('UPDATE users SET name=$2 WHERE id=$1', [res.locals.user.id, d.name]);
+    if (d.physics_curriculum !== undefined)
+      await db.query('UPDATE student_profiles SET physics_curriculum=$2 WHERE student_id=$1', [
+        res.locals.user.id,
+        d.physics_curriculum,
+      ]);
     const beforeSubjects = (
       await db.query('SELECT subject_id FROM student_subjects WHERE student_id=$1 AND active', [
         res.locals.user.id,
@@ -422,23 +431,54 @@ export function createApp(db: DB, provider?: AIService) {
   route('post', '/api/diagnostic', authenticated, role('student'), async (req: any, res: any) => {
     const subject = z.enum(['math', 'physics', 'english']).parse(req.body.subject);
     await requireActive(db, res.locals.user.id, subject);
-    const all = (await skillsFor(db, res.locals.user.id)).filter((s) => s.subject_id === subject);
+    if (subject === 'english')
+      fail(
+        'English Diagnostic використовує CEFR. Відкрийте /diagnostic/english або API /api/english-diagnostic.',
+        409,
+      );
+    const profile = (
+      await db.query(
+        'SELECT grade,country,physics_curriculum FROM student_profiles WHERE student_id=$1',
+        [res.locals.user.id],
+      )
+    ).rows[0];
+    const curriculum =
+      subject === 'physics'
+        ? eligiblePhysics(profile.country, profile.grade, profile.physics_curriculum)
+        : null;
+    const eligible = curriculum?.skills.map((s) => s.id);
+    const all = (await skillsFor(db, res.locals.user.id))
+      .filter((s) => s.subject_id === subject && (!eligible || eligible.includes(s.id)))
+      .map((s) => ({
+        ...s,
+        grade_level: curriculum?.skills.find((k) => k.id === s.id)?.grade_level || s.grade_level,
+      }));
     const qs = (
       await db.query(
         'SELECT q.* FROM questions q ' +
-          (subject === 'math' ? 'JOIN diagnostic_questions dq ON dq.question_id=q.id ' : '') +
+          'JOIN diagnostic_questions dq ON dq.question_id=q.id ' +
           'JOIN skills s ON s.id=q.skill_id WHERE s.subject_id=$1 ' +
           (pilotMode() ? "AND q.review_status='approved' AND s.review_status='approved' " : '') +
           'ORDER BY s.sort_order,q.difficulty,q.id',
         [subject],
       )
-    ).rows;
+    ).rows.filter((q) => all.some((s) => s.id === q.skill_id));
     const baseline = subjectSummary(all);
-    const profile = (
-      await db.query('SELECT grade FROM student_profiles WHERE student_id=$1', [res.locals.user.id])
-    ).rows[0];
+    if (!all.length) fail('Для цього класу ще немає доступних навичок у вибраній програмі.', 409);
     const state: any = {
       ...(subject === 'math' ? { algorithm: 'math-v3', grade: profile.grade, band: 2 } : {}),
+      ...(subject === 'physics'
+        ? {
+            algorithm: 'physics-v4',
+            grade: profile.grade,
+            targetGrade: profile.grade,
+            startLevel: 3,
+            band: 3,
+            curriculumFloor: 1,
+            eligible,
+            curriculum: curriculum!.curriculum,
+          }
+        : {}),
       previous: (
         await db.query(
           'SELECT DISTINCT question_id FROM diagnostic_answers a JOIN diagnostic_sessions d ON d.id=a.session_id WHERE d.student_id=$1 AND d.subject_id=$2',
@@ -503,12 +543,13 @@ export function createApp(db: DB, provider?: AIService) {
       state.skill = q.skill_id;
       state.difficulty = q.difficulty;
       const all = (await skillsFor(db, res.locals.user.id)).filter(
-        (s) => s.subject_id === session.subject_id,
+        (s) =>
+          s.subject_id === session.subject_id && (!state.eligible || state.eligible.includes(s.id)),
       );
       const qs = (
         await db.query(
           'SELECT q.* FROM questions q ' +
-            (state.algorithm === 'math-v3'
+            (['math-v3', 'physics-v4'].includes(state.algorithm)
               ? 'JOIN diagnostic_questions dq ON dq.question_id=q.id '
               : '') +
             'JOIN skills s ON s.id=q.skill_id WHERE s.subject_id=$1 ' +
@@ -516,7 +557,7 @@ export function createApp(db: DB, provider?: AIService) {
             'ORDER BY s.sort_order,q.difficulty,q.id',
           [session.subject_id],
         )
-      ).rows;
+      ).rows.filter((q) => all.some((s) => s.id === q.skill_id));
       const next = chooseDiagnostic(qs, all, state, correct);
       if (!next && !diagnosticMetrics(qs, all, state).complete)
         state.stopReason = 'content-exhausted';
@@ -572,6 +613,20 @@ export function createApp(db: DB, provider?: AIService) {
     const skillId = z.string().parse(req.body.skill);
     const skill = (await skillsFor(db, res.locals.user.id)).find((s) => s.id === skillId);
     if (!skill) fail('Unknown skill');
+    if (skill.subject_id === 'physics') {
+      const profile = (
+        await db.query(
+          'SELECT grade,country,physics_curriculum FROM student_profiles WHERE student_id=$1',
+          [res.locals.user.id],
+        )
+      ).rows[0];
+      if (
+        !eligiblePhysics(profile.country, profile.grade, profile.physics_curriculum).skills.some(
+          (s) => s.id === skillId,
+        )
+      )
+        fail('Навичка поки не входить до програми вашого класу.', 409);
+    }
     if (pilotMode() && skill.review_status !== 'approved')
       fail('This skill awaits teacher approval', 409);
     await requireActive(db, res.locals.user.id, skill.subject_id);
@@ -583,7 +638,7 @@ export function createApp(db: DB, provider?: AIService) {
         [skillId, res.locals.user.id],
       )
     ).rows;
-    if (qs.length < 8) fail('This skill needs 8 questions before a lesson can start.');
+    if (qs.length < 5) fail('This skill needs 5 questions before a lesson can start.');
     const review = skill.prerequisites[0]
       ? (
           await db.query(
@@ -595,7 +650,11 @@ export function createApp(db: DB, provider?: AIService) {
         ).rows
       : qs.slice(0, 2);
     if (review.length < 2) fail('Prerequisite questions await teacher approval', 409);
-    const questions = [...review.map((q) => q.id), null, ...qs.slice(2, 8).map((q) => q.id)];
+    const questions = [
+      ...review.map((q) => q.id),
+      null,
+      ...(qs.length >= 8 ? qs.slice(2, 8) : qs).map((q) => q.id),
+    ];
     const id = randomUUID();
     const state = {
       questions,
@@ -691,7 +750,7 @@ export function createApp(db: DB, provider?: AIService) {
       }
       state.index++;
       state.hints = 0;
-      if (state.index === 9) {
+      if (state.index === state.questions.length) {
         const answers = (
           await db.query(
             'SELECT a.*,q.skill_id FROM student_answers a JOIN questions q ON q.id=a.question_id WHERE a.session_id=$1 ORDER BY position',
@@ -1063,6 +1122,9 @@ export function createApp(db: DB, provider?: AIService) {
   );
   route('get', '/api/admin', authenticated, role('admin'), async (_req: any, res: any) =>
     res.json({
+      english_assessment_items: (
+        await db.query('SELECT id,content,review_status FROM english_assessment_items ORDER BY id')
+      ).rows,
       skills: await skillsFor(db, 'demo-student'),
       subjects: (await db.query('SELECT * FROM subjects')).rows,
       curricula: (await db.query('SELECT * FROM curricula')).rows,
@@ -1077,6 +1139,23 @@ export function createApp(db: DB, provider?: AIService) {
         )
       ).rows[0],
     }),
+  );
+  route(
+    'put',
+    '/api/admin/english-review',
+    authenticated,
+    role('admin'),
+    async (req: any, res: any) => {
+      const d = z
+        .object({ id: z.string(), review_status: z.enum(['draft', 'reviewed', 'approved']) })
+        .parse(req.body);
+      const result = await db.query(
+        'UPDATE english_assessment_items SET review_status=$2 WHERE id=$1 RETURNING id',
+        [d.id, d.review_status],
+      );
+      if (!result.rows.length) fail('Матеріал не знайдено', 404);
+      res.json({ ok: true });
+    },
   );
   route('put', '/api/admin/skill', authenticated, role('admin'), async (req: any, res: any) => {
     const d = z

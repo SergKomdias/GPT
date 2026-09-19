@@ -1,4 +1,5 @@
 import { PilotMetrics } from '../components/Pilot';
+import { EnglishContentReview } from '../components/EnglishContentReview';
 import { useEffect, useState } from 'react';
 import { useApp } from '../hooks/useApp';
 import { api } from '../services/api';
@@ -108,6 +109,10 @@ export function Admin() {
         )}
       />
       <PilotMetrics />
+      <EnglishContentReview
+        items={data?.english_assessment_items || []}
+        onSaved={() => void load()}
+      />
       <Notice error>{error}</Notice>
       {!data ? (
         <Loading />

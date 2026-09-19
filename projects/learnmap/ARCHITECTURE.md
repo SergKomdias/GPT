@@ -18,7 +18,9 @@ Security remains server-side: HttpOnly SameSite sessions, salted scrypt hashes, 
 
 See DATABASE.md for migration details, AI_TUTOR.md for evidence rules and docs/QA.md for validation and remaining pilot limitations.
 
-Mathematics Diagnostic uses `server/math-content.ts` for authored five-level tasks and curriculum metadata, and `server/math-diagnostic.ts` for grade-aware routing. New math session state carries `algorithm: math-v3`, the server profile grade, cognitive band and route reason. Correct responses increase demand across skills; mistakes prioritize prerequisite edges. Finite-bank exhaustion ends the diagnostic explicitly rather than lowering the challenge. Legacy sessions and other subjects retain their existing router. Objective grading still compares the server answer key and never calls AI. See [routing and fixtures](docs/MATHEMATICS-DIAGNOSTIC.uk.md).
+Mathematics Diagnostic uses `server/math-content.ts` and `server/math-diagnostic.ts` for authored cognitive tasks and grade-aware routing (`math-v3`). Physics reuses the router with an L3/current-grade anchor (`physics-v4`) and country/grade eligibility from `physics-curriculum.ts`. Errors prioritize prerequisite edges. `shared/cognitive-demand.ts` is the common thinking-not-magnitude policy. Legacy sessions retain their original state and question keys. See [Math](docs/MATHEMATICS-DIAGNOSTIC.uk.md) and [Physics/English](docs/DIAGNOSTICS.uk.md).
+
+English uses separate content, placement, route and evidence modules (`english-placement-content.ts`, `english-placement.ts`, `english-assessment-routes.ts`). Its six-domain map never averages legacy mastery percentages. New JSONB session/answer records preserve modality, original production, transcript assistance and validated AI dimensions. Public task payloads omit keys and listening scripts. Productive network work releases the DB transaction and rechecks consent/ownership before writes. The new UI uses existing components/styles; Speaking Practice is separate.
 
 
 ## Pilot 0.3

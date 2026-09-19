@@ -65,3 +65,9 @@ DO $$ BEGIN
     INSERT INTO schema_migrations(id) VALUES('math-difficulty-five-levels');
   END IF;
 END $$;
+ALTER TABLE questions ADD COLUMN IF NOT EXISTS presentation jsonb;
+ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS physics_curriculum text;
+CREATE TABLE IF NOT EXISTS english_assessment_items(id text PRIMARY KEY,content jsonb NOT NULL,review_status text NOT NULL DEFAULT 'draft' CHECK(review_status IN ('draft','reviewed','approved')));
+CREATE TABLE IF NOT EXISTS english_assessment_sessions(id text PRIMARY KEY,student_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE,state jsonb NOT NULL,completed boolean NOT NULL DEFAULT false,created_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS english_assessment_answers(session_id text REFERENCES english_assessment_sessions(id) ON DELETE CASCADE,task_id text REFERENCES english_assessment_items(id),original_answer text NOT NULL,assessment jsonb,observation jsonb NOT NULL,created_at timestamptz NOT NULL DEFAULT now(),PRIMARY KEY(session_id,task_id));
+CREATE INDEX IF NOT EXISTS english_assessment_owner ON english_assessment_sessions(student_id,created_at);

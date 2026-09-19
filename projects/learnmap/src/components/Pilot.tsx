@@ -80,6 +80,12 @@ export function PrivacyControls({ student }: { student?: string }) {
           'Зберігання у провайдера відокремлене від видалення у LearnMap.',
         )}
       </p>
+      <p>
+        {t(
+          'Deleting transcripts also deletes productive English Diagnostic answers and invalidates its current CEFR map. The same retention period applies to these answers.',
+          'Видалення текстів розмов також видаляє власні письмові й голосові відповіді English Diagnostic та анулює його поточну карту CEFR. Для цих відповідей діє той самий строк зберігання.',
+        )}
+      </p>
       {p && (
         <p>
           {t('Consent', 'Згода')}:{' '}

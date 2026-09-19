@@ -11,13 +11,13 @@ export function chooseMathDiagnostic(
     questions.filter((q) => asked.has(q.id) && q.skill_id === id).length;
   const remaining = questions.filter((q) => !asked.has(q.id) && count(q.skill_id) < 2);
   if (!remaining.length) return null;
-  const target = Math.max(1, Math.min(11, (state.grade || 10) - 1));
+  const target = state.targetGrade || Math.max(1, Math.min(11, (state.grade || 10) - 1));
   const branch = (s: any) => s.diagnostic_branch || s.topic_id;
   const tested = new Set(skills.filter((s) => count(s.id)).map(branch));
   const band =
     state.asked.length && correct !== undefined
       ? Math.max(1, Math.min(5, (state.band || state.difficulty || 2) + (correct ? 1 : -1)))
-      : 2;
+      : state.startLevel || 2;
   state.band = band;
   let candidates = skills.filter((s) => remaining.some((q) => q.skill_id === s.id));
   const current = skills.find((s) => s.id === state.skill);
@@ -34,7 +34,9 @@ export function chooseMathDiagnostic(
   }
   if (reason === 'grade-anchor') {
     const ageAppropriate = candidates.filter(
-      (s) => (s.grade_level || 7) >= target - 1 && (s.grade_level || 7) <= target + 1,
+      (s) =>
+        (s.grade_level || 7) >= (state.curriculumFloor || target - 1) &&
+        (s.grade_level || 7) <= target + 1,
     );
     if (ageAppropriate.length) candidates = ageAppropriate;
     // Stay briefly to confirm an increased demand; do not descend after a correct answer.

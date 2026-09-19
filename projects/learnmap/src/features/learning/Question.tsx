@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
 import { useApp } from '../../hooks/useApp';
+import { PhysicsGraph } from '../../components/PhysicsGraph';
+import { PhysicsCircuit } from '../../components/PhysicsCircuit';
 export function Question({
   question,
   value,
@@ -23,6 +25,8 @@ export function Question({
   return (
     <fieldset className="question">
       <legend>{question.prompt[lang]}</legend>
+      {question.presentation?.graph && <PhysicsGraph graph={question.presentation.graph} />}
+      {question.presentation?.circuit && <PhysicsCircuit labels={question.presentation.circuit} />}
       <div className="answer-options">
         {order.map((i: number, position: number) => (
           <label key={i} className={value === i ? 'selected' : ''}>

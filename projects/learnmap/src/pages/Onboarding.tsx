@@ -31,6 +31,7 @@ export function Onboarding() {
               grade: Number(d.grade),
               age: Number(d.age),
               daily_minutes: Number(d.daily_minutes),
+              physics_curriculum: d.physics_curriculum || null,
             });
             setLang(d.interface_language as 'en' | 'uk');
             await refresh();
@@ -76,6 +77,17 @@ export function Onboarding() {
           <input name="name" defaultValue={user?.name} required maxLength={60} />
         </label>
         <div className="form-grid">
+          <label>
+            Програма фізики
+            <select
+              name="physics_curriculum"
+              defaultValue={user?.profile?.physics_curriculum || ''}
+            >
+              <option value="">За країною профілю (Україна)</option>
+              <option value="UA">Україна — пілотна</option>
+              <option value="international">Міжнародна — пілотна</option>
+            </select>
+          </label>
           <label>
             {t('Age', 'Вік')}
             <input

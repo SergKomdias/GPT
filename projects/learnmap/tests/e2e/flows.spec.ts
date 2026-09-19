@@ -114,7 +114,7 @@ test('synthetic microphone recording, transcription, feedback, finish and listen
     .click();
   await page.getByRole('radio', { name: /^[A-D] A solar-powered car$/ }).check();
   await page.getByRole('button', { name: 'Check answer', exact: true }).click();
-  await expect(page.getByText(/Correct! Listening mastery updated/)).toBeVisible();
+  await expect(page.getByText(/Correct! Listening practice saved/)).toBeVisible();
 });
 test('permission denied recovers to typed response and Ukrainian mobile remains usable', async ({
   page,

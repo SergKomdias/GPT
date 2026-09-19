@@ -73,6 +73,14 @@ export async function trackSubjects(db: DB, user: string, before: string[]) {
     await track(db, user, 'subject_paused', id);
 }
 export async function eraseTranscripts(db: DB, student: string) {
+  await db.query(
+    "UPDATE english_assessment_sessions SET completed=true,state=jsonb_set(jsonb_set(state,'{deleted}','true'),'{observations}','[]') WHERE student_id=$1",
+    [student],
+  );
+  await db.query(
+    "DELETE FROM english_assessment_answers WHERE session_id IN(SELECT id FROM english_assessment_sessions WHERE student_id=$1) AND observation->>'kind' IN('writing','speaking')",
+    [student],
+  );
   // Close sessions first: an in-flight provider response cannot recreate deleted transcripts.
   await db.query('UPDATE speaking_sessions SET completed=true,topic=$2 WHERE student_id=$1', [
     student,
@@ -90,6 +98,14 @@ export async function eraseTranscripts(db: DB, student: string) {
 }
 export async function purgeExpired(db: DB) {
   const cutoff = new Date(Date.now() - retentionDays() * 86400000).toISOString();
+  await db.query(
+    "UPDATE english_assessment_sessions SET completed=true,state=jsonb_set(jsonb_set(state,'{deleted}','true'),'{observations}','[]') WHERE created_at<$1",
+    [cutoff],
+  );
+  await db.query(
+    "DELETE FROM english_assessment_answers WHERE session_id IN(SELECT id FROM english_assessment_sessions WHERE created_at<$1) AND observation->>'kind' IN('writing','speaking')",
+    [cutoff],
+  );
   await db.query('UPDATE speaking_sessions SET completed=true,topic=$2 WHERE created_at<$1', [
     cutoff,
     'Expired',
@@ -160,12 +176,14 @@ export async function exportData(db: DB, id: string) {
     'lesson_sessions',
     'speaking_sessions',
     'pilot_consent',
+    'english_assessment_sessions',
   ])
     data[table] = (await db.query(`SELECT * FROM ${table} WHERE student_id=$1`, [id])).rows;
   for (const [answers, sessions] of [
     ['student_answers', 'lesson_sessions'],
     ['diagnostic_answers', 'diagnostic_sessions'],
     ['speaking_turns', 'speaking_sessions'],
+    ['english_assessment_answers', 'english_assessment_sessions'],
   ])
     data[answers] = (
       await db.query(

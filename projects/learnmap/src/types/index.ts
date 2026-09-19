@@ -11,6 +11,7 @@ export interface User {
     grade: number;
     age: number;
     country: string;
+    physics_curriculum?: 'UA' | 'international' | null;
     learning_language: Language;
     interface_language: Language;
     xp: number;
@@ -70,6 +71,7 @@ export interface LearningEvent {
   created_at: string;
 }
 export interface Snapshot {
+  englishAssessment: any;
   profile: User['profile'] & { name: string };
   skills: Skill[];
   subjects: Subject[];

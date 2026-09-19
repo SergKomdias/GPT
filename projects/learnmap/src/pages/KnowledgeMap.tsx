@@ -5,11 +5,12 @@ import { useApp } from '../hooks/useApp';
 import { Heading, Loading, Notice, MasteryBar, Arrow } from '../components/UI';
 import { KnowledgeGraph } from '../components/KnowledgeGraph';
 import { masteryStatus } from '../utils/format';
+import { EnglishAssessmentMap } from '../components/EnglishAssessmentMap';
 export function KnowledgeMap() {
   const { t, lang } = useApp();
   const [params] = useSearchParams();
   const { data, error } = useSnapshot();
-  const [subject, setSubject] = useState('math');
+  const [subject, setSubject] = useState(params.get('subject') || 'math');
   const [selected, setSelected] = useState(params.get('skill') || 'quadratic');
   const [strand, setStrand] = useState('grammar');
   if (!data) return error ? <Notice error>{error}</Notice> : <Loading />;
@@ -42,6 +43,7 @@ export function KnowledgeMap() {
         ))}
       </div>
       <div className="map-layout">
+        {activeSubject === 'english' && <EnglishAssessmentMap map={data.englishAssessment} />}
         {activeSubject === 'english' ? (
           <div className="tabs strand-tabs">
             {data.skills

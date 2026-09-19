@@ -13,6 +13,7 @@
     "test:e2e": "playwright test",
     "db:seed": "tsx server/seed-cli.ts",
     "pilot:smoke": "tsx server/live-smoke.ts",
+    "diagnostic:smoke": "tsx server/diagnostic-live-smoke.ts",
     "db:migrate": "tsx server/seed-cli.ts",
     "privacy:purge": "tsx server/purge-cli.ts"
   },

@@ -1,0 +1,2326 @@
+{
+  "synthetic": true,
+  "generated_at": "2026-09-18",
+  "english": [
+    {
+      "profile": "A2",
+      "state": {
+        "asked": [
+          "en-v4-grammar-3-0",
+          "en-v4-vocabulary-2-0",
+          "en-v4-reading-3-0",
+          "en-v4-production-1",
+          "en-v4-vocabulary-3-0",
+          "en-v4-reading-2-0",
+          "en-v4-production-2",
+          "en-v4-vocabulary-2-1",
+          "en-v4-reading-3-1",
+          "en-v4-grammar-2-0",
+          "en-v4-vocabulary-3-1",
+          "en-v4-reading-2-1",
+          "en-v4-grammar-2-1",
+          "en-v4-vocabulary-2-2",
+          "en-v4-reading-2-2",
+          "en-v4-grammar-2-2",
+          "en-v4-vocabulary-2-3",
+          "en-v4-reading-2-3"
+        ],
+        "observations": [
+          {
+            "id": "en-v4-grammar-3-0",
+            "strand": "grammar",
+            "subskill": "tense-contrast",
+            "level": 3,
+            "kind": "choice",
+            "correct": false,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-vocabulary-2-0",
+            "strand": "vocabulary",
+            "subskill": "phrasal-verbs",
+            "level": 2,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-reading-3-0",
+            "strand": "reading",
+            "subskill": "gist",
+            "level": 3,
+            "kind": "choice",
+            "correct": false,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-production-1",
+            "strand": "grammar",
+            "subskill": "tense-contrast",
+            "level": 2,
+            "kind": "short",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-vocabulary-3-0",
+            "strand": "vocabulary",
+            "subskill": "collocations",
+            "level": 3,
+            "kind": "choice",
+            "correct": false,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-reading-2-0",
+            "strand": "reading",
+            "subskill": "gist",
+            "level": 2,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-production-2",
+            "strand": "grammar",
+            "subskill": "tense-contrast",
+            "level": 3,
+            "kind": "short",
+            "correct": false,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-vocabulary-2-1",
+            "strand": "vocabulary",
+            "subskill": "collocations",
+            "level": 2,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-reading-3-1",
+            "strand": "reading",
+            "subskill": "detail",
+            "level": 3,
+            "kind": "choice",
+            "correct": false,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-grammar-2-0",
+            "strand": "grammar",
+            "subskill": "tense-contrast",
+            "level": 2,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-vocabulary-3-1",
+            "strand": "vocabulary",
+            "subskill": "phrasal-verbs",
+            "level": 3,
+            "kind": "choice",
+            "correct": false,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-reading-2-1",
+            "strand": "reading",
+            "subskill": "detail",
+            "level": 2,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-grammar-2-1",
+            "strand": "grammar",
+            "subskill": "conditionals",
+            "level": 2,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-vocabulary-2-2",
+            "strand": "vocabulary",
+            "subskill": "near-synonyms",
+            "level": 2,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-reading-2-2",
+            "strand": "reading",
+            "subskill": "inference",
+            "level": 2,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-grammar-2-2",
+            "strand": "grammar",
+            "subskill": "gerund-infinitive",
+            "level": 2,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-vocabulary-2-3",
+            "strand": "vocabulary",
+            "subskill": "word-formation",
+            "level": 2,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-reading-2-3",
+            "strand": "reading",
+            "subskill": "meaning-context",
+            "level": 2,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          }
+        ],
+        "band": 3,
+        "phase": "production",
+        "placementCount": 12,
+        "started": 0,
+        "placementLevel": 2
+      },
+      "trace": [
+        {
+          "id": "en-v4-grammar-3-0",
+          "level": 3,
+          "strand": "grammar",
+          "correct": false,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-vocabulary-2-0",
+          "level": 2,
+          "strand": "vocabulary",
+          "correct": true,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-reading-3-0",
+          "level": 3,
+          "strand": "reading",
+          "correct": false,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-production-1",
+          "level": 2,
+          "strand": "grammar",
+          "correct": true,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-vocabulary-3-0",
+          "level": 3,
+          "strand": "vocabulary",
+          "correct": false,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-reading-2-0",
+          "level": 2,
+          "strand": "reading",
+          "correct": true,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-production-2",
+          "level": 3,
+          "strand": "grammar",
+          "correct": false,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-vocabulary-2-1",
+          "level": 2,
+          "strand": "vocabulary",
+          "correct": true,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-reading-3-1",
+          "level": 3,
+          "strand": "reading",
+          "correct": false,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-grammar-2-0",
+          "level": 2,
+          "strand": "grammar",
+          "correct": true,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-vocabulary-3-1",
+          "level": 3,
+          "strand": "vocabulary",
+          "correct": false,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-reading-2-1",
+          "level": 2,
+          "strand": "reading",
+          "correct": true,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-grammar-2-1",
+          "level": 2,
+          "strand": "grammar",
+          "correct": true,
+          "phase": "gaps"
+        },
+        {
+          "id": "en-v4-vocabulary-2-2",
+          "level": 2,
+          "strand": "vocabulary",
+          "correct": true,
+          "phase": "gaps"
+        },
+        {
+          "id": "en-v4-reading-2-2",
+          "level": 2,
+          "strand": "reading",
+          "correct": true,
+          "phase": "gaps"
+        },
+        {
+          "id": "en-v4-grammar-2-2",
+          "level": 2,
+          "strand": "grammar",
+          "correct": true,
+          "phase": "gaps"
+        },
+        {
+          "id": "en-v4-vocabulary-2-3",
+          "level": 2,
+          "strand": "vocabulary",
+          "correct": true,
+          "phase": "gaps"
+        },
+        {
+          "id": "en-v4-reading-2-3",
+          "level": 2,
+          "strand": "reading",
+          "correct": true,
+          "phase": "gaps"
+        }
+      ],
+      "map": {
+        "estimated_cefr": null,
+        "placement_cefr": "A2",
+        "scope": "receptive-placement-only",
+        "confidence": "medium",
+        "coverage": 26,
+        "strands": {
+          "grammar": {
+            "level": 2,
+            "estimated_cefr": "A2",
+            "confidence": "medium",
+            "coverage": 0.25,
+            "strengths": ["tense-contrast (A2)", "conditionals (A2)", "gerund-infinitive (A2)"],
+            "gaps": ["tense-contrast (B1)"],
+            "evidence": 6
+          },
+          "vocabulary": {
+            "level": 2,
+            "estimated_cefr": "A2",
+            "confidence": "medium",
+            "coverage": 0.5,
+            "strengths": [
+              "phrasal-verbs (A2)",
+              "collocations (A2)",
+              "near-synonyms (A2)",
+              "word-formation (A2)"
+            ],
+            "gaps": ["collocations (B1)", "phrasal-verbs (B1)"],
+            "evidence": 6
+          },
+          "reading": {
+            "level": 2,
+            "estimated_cefr": "A2",
+            "confidence": "medium",
+            "coverage": 0.8,
+            "strengths": ["gist (A2)", "detail (A2)", "inference (A2)", "meaning-context (A2)"],
+            "gaps": ["gist (B1)", "detail (B1)"],
+            "evidence": 6
+          },
+          "writing": {
+            "level": null,
+            "estimated_cefr": null,
+            "confidence": "insufficient",
+            "coverage": 0,
+            "strengths": [],
+            "gaps": [],
+            "evidence": 0
+          },
+          "listening": {
+            "level": null,
+            "estimated_cefr": null,
+            "confidence": "insufficient",
+            "coverage": 0,
+            "strengths": [],
+            "gaps": [],
+            "evidence": 0
+          },
+          "speaking": {
+            "level": null,
+            "estimated_cefr": null,
+            "confidence": "insufficient",
+            "coverage": 0,
+            "strengths": [],
+            "gaps": [],
+            "evidence": 0
+          }
+        },
+        "acoustic_fluency": null,
+        "pronunciation": null
+      },
+      "next": {
+        "id": "en-v4-writing-2",
+        "strand": "writing",
+        "subskill": "productive-writing",
+        "level": 2,
+        "kind": "writing",
+        "prompt": "Write an email inviting a friend to an activity. Say what it is, when and where it happens, and what your friend should bring.",
+        "words": [40, 60]
+      }
+    },
+    {
+      "profile": "weakB1",
+      "state": {
+        "asked": [
+          "en-v4-grammar-3-0",
+          "en-v4-vocabulary-4-0",
+          "en-v4-reading-3-0",
+          "en-v4-production-3",
+          "en-v4-vocabulary-3-0",
+          "en-v4-reading-2-0",
+          "en-v4-production-2",
+          "en-v4-vocabulary-4-1",
+          "en-v4-reading-3-1",
+          "en-v4-production-4",
+          "en-v4-vocabulary-3-1",
+          "en-v4-reading-2-1",
+          "en-v4-grammar-3-1",
+          "en-v4-vocabulary-2-0",
+          "en-v4-reading-3-2",
+          "en-v4-grammar-3-2",
+          "en-v4-vocabulary-2-1",
+          "en-v4-reading-3-3"
+        ],
+        "observations": [
+          {
+            "id": "en-v4-grammar-3-0",
+            "strand": "grammar",
+            "subskill": "tense-contrast",
+            "level": 3,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-vocabulary-4-0",
+            "strand": "vocabulary",
+            "subskill": "collocations",
+            "level": 4,
+            "kind": "choice",
+            "correct": false,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-reading-3-0",
+            "strand": "reading",
+            "subskill": "gist",
+            "level": 3,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-production-3",
+            "strand": "grammar",
+            "subskill": "transformations",
+            "level": 4,
+            "kind": "short",
+            "correct": false,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-vocabulary-3-0",
+            "strand": "vocabulary",
+            "subskill": "collocations",
+            "level": 3,
+            "kind": "choice",
+            "correct": false,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-reading-2-0",
+            "strand": "reading",
+            "subskill": "gist",
+            "level": 2,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-production-2",
+            "strand": "grammar",
+            "subskill": "tense-contrast",
+            "level": 3,
+            "kind": "short",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-vocabulary-4-1",
+            "strand": "vocabulary",
+            "subskill": "phrasal-verbs",
+            "level": 4,
+            "kind": "choice",
+            "correct": false,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-reading-3-1",
+            "strand": "reading",
+            "subskill": "detail",
+            "level": 3,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-production-4",
+            "strand": "grammar",
+            "subskill": "transformations",
+            "level": 4,
+            "kind": "short",
+            "correct": false,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-vocabulary-3-1",
+            "strand": "vocabulary",
+            "subskill": "phrasal-verbs",
+            "level": 3,
+            "kind": "choice",
+            "correct": false,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-reading-2-1",
+            "strand": "reading",
+            "subskill": "detail",
+            "level": 2,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-grammar-3-1",
+            "strand": "grammar",
+            "subskill": "conditionals",
+            "level": 3,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-vocabulary-2-0",
+            "strand": "vocabulary",
+            "subskill": "phrasal-verbs",
+            "level": 2,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-reading-3-2",
+            "strand": "reading",
+            "subskill": "inference",
+            "level": 3,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-grammar-3-2",
+            "strand": "grammar",
+            "subskill": "reported-speech",
+            "level": 3,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-vocabulary-2-1",
+            "strand": "vocabulary",
+            "subskill": "collocations",
+            "level": 2,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-reading-3-3",
+            "strand": "reading",
+            "subskill": "meaning-context",
+            "level": 3,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          }
+        ],
+        "band": 3,
+        "phase": "production",
+        "placementCount": 12,
+        "started": 0,
+        "placementLevel": 3
+      },
+      "trace": [
+        {
+          "id": "en-v4-grammar-3-0",
+          "level": 3,
+          "strand": "grammar",
+          "correct": true,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-vocabulary-4-0",
+          "level": 4,
+          "strand": "vocabulary",
+          "correct": false,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-reading-3-0",
+          "level": 3,
+          "strand": "reading",
+          "correct": true,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-production-3",
+          "level": 4,
+          "strand": "grammar",
+          "correct": false,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-vocabulary-3-0",
+          "level": 3,
+          "strand": "vocabulary",
+          "correct": false,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-reading-2-0",
+          "level": 2,
+          "strand": "reading",
+          "correct": true,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-production-2",
+          "level": 3,
+          "strand": "grammar",
+          "correct": true,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-vocabulary-4-1",
+          "level": 4,
+          "strand": "vocabulary",
+          "correct": false,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-reading-3-1",
+          "level": 3,
+          "strand": "reading",
+          "correct": true,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-production-4",
+          "level": 4,
+          "strand": "grammar",
+          "correct": false,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-vocabulary-3-1",
+          "level": 3,
+          "strand": "vocabulary",
+          "correct": false,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-reading-2-1",
+          "level": 2,
+          "strand": "reading",
+          "correct": true,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-grammar-3-1",
+          "level": 3,
+          "strand": "grammar",
+          "correct": true,
+          "phase": "gaps"
+        },
+        {
+          "id": "en-v4-vocabulary-2-0",
+          "level": 2,
+          "strand": "vocabulary",
+          "correct": true,
+          "phase": "gaps"
+        },
+        {
+          "id": "en-v4-reading-3-2",
+          "level": 3,
+          "strand": "reading",
+          "correct": true,
+          "phase": "gaps"
+        },
+        {
+          "id": "en-v4-grammar-3-2",
+          "level": 3,
+          "strand": "grammar",
+          "correct": true,
+          "phase": "gaps"
+        },
+        {
+          "id": "en-v4-vocabulary-2-1",
+          "level": 2,
+          "strand": "vocabulary",
+          "correct": true,
+          "phase": "gaps"
+        },
+        {
+          "id": "en-v4-reading-3-3",
+          "level": 3,
+          "strand": "reading",
+          "correct": true,
+          "phase": "gaps"
+        }
+      ],
+      "map": {
+        "estimated_cefr": null,
+        "placement_cefr": "B1",
+        "scope": "receptive-placement-only",
+        "confidence": "medium",
+        "coverage": 23,
+        "strands": {
+          "grammar": {
+            "level": 3,
+            "estimated_cefr": "B1",
+            "confidence": "medium",
+            "coverage": 0.3333333333333333,
+            "strengths": ["tense-contrast (B1)", "conditionals (B1)", "reported-speech (B1)"],
+            "gaps": ["transformations (B2)"],
+            "evidence": 6
+          },
+          "vocabulary": {
+            "level": 2,
+            "estimated_cefr": "A2",
+            "confidence": "medium",
+            "coverage": 0.25,
+            "strengths": ["phrasal-verbs (A2)", "collocations (A2)"],
+            "gaps": [
+              "collocations (B2)",
+              "collocations (B1)",
+              "phrasal-verbs (B2)",
+              "phrasal-verbs (B1)"
+            ],
+            "evidence": 6
+          },
+          "reading": {
+            "level": 3,
+            "estimated_cefr": "B1",
+            "confidence": "medium",
+            "coverage": 0.8,
+            "strengths": [
+              "gist (B1)",
+              "gist (A2)",
+              "detail (B1)",
+              "detail (A2)",
+              "inference (B1)",
+              "meaning-context (B1)"
+            ],
+            "gaps": [],
+            "evidence": 6
+          },
+          "writing": {
+            "level": null,
+            "estimated_cefr": null,
+            "confidence": "insufficient",
+            "coverage": 0,
+            "strengths": [],
+            "gaps": [],
+            "evidence": 0
+          },
+          "listening": {
+            "level": null,
+            "estimated_cefr": null,
+            "confidence": "insufficient",
+            "coverage": 0,
+            "strengths": [],
+            "gaps": [],
+            "evidence": 0
+          },
+          "speaking": {
+            "level": null,
+            "estimated_cefr": null,
+            "confidence": "insufficient",
+            "coverage": 0,
+            "strengths": [],
+            "gaps": [],
+            "evidence": 0
+          }
+        },
+        "acoustic_fluency": null,
+        "pronunciation": null
+      },
+      "next": {
+        "id": "en-v4-writing-3",
+        "strand": "writing",
+        "subskill": "productive-writing",
+        "level": 3,
+        "kind": "writing",
+        "prompt": "Your school wants to start an after-school club. Write an email proposing one club, explaining two benefits and suggesting how to organise the first meeting.",
+        "words": [80, 120]
+      }
+    },
+    {
+      "profile": "strongB1",
+      "state": {
+        "asked": [
+          "en-v4-grammar-3-0",
+          "en-v4-vocabulary-4-0",
+          "en-v4-reading-3-0",
+          "en-v4-production-3",
+          "en-v4-vocabulary-3-0",
+          "en-v4-reading-4-0",
+          "en-v4-production-2",
+          "en-v4-vocabulary-4-1",
+          "en-v4-reading-3-1",
+          "en-v4-production-4",
+          "en-v4-vocabulary-3-1",
+          "en-v4-reading-4-1",
+          "en-v4-grammar-3-1",
+          "en-v4-vocabulary-3-2",
+          "en-v4-reading-3-2",
+          "en-v4-grammar-3-2",
+          "en-v4-vocabulary-3-3",
+          "en-v4-reading-3-3"
+        ],
+        "observations": [
+          {
+            "id": "en-v4-grammar-3-0",
+            "strand": "grammar",
+            "subskill": "tense-contrast",
+            "level": 3,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-vocabulary-4-0",
+            "strand": "vocabulary",
+            "subskill": "collocations",
+            "level": 4,
+            "kind": "choice",
+            "correct": false,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-reading-3-0",
+            "strand": "reading",
+            "subskill": "gist",
+            "level": 3,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-production-3",
+            "strand": "grammar",
+            "subskill": "transformations",
+            "level": 4,
+            "kind": "short",
+            "correct": false,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-vocabulary-3-0",
+            "strand": "vocabulary",
+            "subskill": "collocations",
+            "level": 3,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-reading-4-0",
+            "strand": "reading",
+            "subskill": "gist",
+            "level": 4,
+            "kind": "choice",
+            "correct": false,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-production-2",
+            "strand": "grammar",
+            "subskill": "tense-contrast",
+            "level": 3,
+            "kind": "short",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-vocabulary-4-1",
+            "strand": "vocabulary",
+            "subskill": "phrasal-verbs",
+            "level": 4,
+            "kind": "choice",
+            "correct": false,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-reading-3-1",
+            "strand": "reading",
+            "subskill": "detail",
+            "level": 3,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-production-4",
+            "strand": "grammar",
+            "subskill": "transformations",
+            "level": 4,
+            "kind": "short",
+            "correct": false,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-vocabulary-3-1",
+            "strand": "vocabulary",
+            "subskill": "phrasal-verbs",
+            "level": 3,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-reading-4-1",
+            "strand": "reading",
+            "subskill": "detail",
+            "level": 4,
+            "kind": "choice",
+            "correct": false,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-grammar-3-1",
+            "strand": "grammar",
+            "subskill": "conditionals",
+            "level": 3,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-vocabulary-3-2",
+            "strand": "vocabulary",
+            "subskill": "word-formation",
+            "level": 3,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-reading-3-2",
+            "strand": "reading",
+            "subskill": "inference",
+            "level": 3,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-grammar-3-2",
+            "strand": "grammar",
+            "subskill": "reported-speech",
+            "level": 3,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-vocabulary-3-3",
+            "strand": "vocabulary",
+            "subskill": "near-synonyms",
+            "level": 3,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-reading-3-3",
+            "strand": "reading",
+            "subskill": "meaning-context",
+            "level": 3,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          }
+        ],
+        "band": 3,
+        "phase": "production",
+        "placementCount": 12,
+        "started": 0,
+        "placementLevel": 3
+      },
+      "trace": [
+        {
+          "id": "en-v4-grammar-3-0",
+          "level": 3,
+          "strand": "grammar",
+          "correct": true,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-vocabulary-4-0",
+          "level": 4,
+          "strand": "vocabulary",
+          "correct": false,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-reading-3-0",
+          "level": 3,
+          "strand": "reading",
+          "correct": true,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-production-3",
+          "level": 4,
+          "strand": "grammar",
+          "correct": false,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-vocabulary-3-0",
+          "level": 3,
+          "strand": "vocabulary",
+          "correct": true,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-reading-4-0",
+          "level": 4,
+          "strand": "reading",
+          "correct": false,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-production-2",
+          "level": 3,
+          "strand": "grammar",
+          "correct": true,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-vocabulary-4-1",
+          "level": 4,
+          "strand": "vocabulary",
+          "correct": false,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-reading-3-1",
+          "level": 3,
+          "strand": "reading",
+          "correct": true,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-production-4",
+          "level": 4,
+          "strand": "grammar",
+          "correct": false,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-vocabulary-3-1",
+          "level": 3,
+          "strand": "vocabulary",
+          "correct": true,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-reading-4-1",
+          "level": 4,
+          "strand": "reading",
+          "correct": false,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-grammar-3-1",
+          "level": 3,
+          "strand": "grammar",
+          "correct": true,
+          "phase": "gaps"
+        },
+        {
+          "id": "en-v4-vocabulary-3-2",
+          "level": 3,
+          "strand": "vocabulary",
+          "correct": true,
+          "phase": "gaps"
+        },
+        {
+          "id": "en-v4-reading-3-2",
+          "level": 3,
+          "strand": "reading",
+          "correct": true,
+          "phase": "gaps"
+        },
+        {
+          "id": "en-v4-grammar-3-2",
+          "level": 3,
+          "strand": "grammar",
+          "correct": true,
+          "phase": "gaps"
+        },
+        {
+          "id": "en-v4-vocabulary-3-3",
+          "level": 3,
+          "strand": "vocabulary",
+          "correct": true,
+          "phase": "gaps"
+        },
+        {
+          "id": "en-v4-reading-3-3",
+          "level": 3,
+          "strand": "reading",
+          "correct": true,
+          "phase": "gaps"
+        }
+      ],
+      "map": {
+        "estimated_cefr": null,
+        "placement_cefr": "B1",
+        "scope": "receptive-placement-only",
+        "confidence": "medium",
+        "coverage": 27,
+        "strands": {
+          "grammar": {
+            "level": 3,
+            "estimated_cefr": "B1",
+            "confidence": "medium",
+            "coverage": 0.3333333333333333,
+            "strengths": ["tense-contrast (B1)", "conditionals (B1)", "reported-speech (B1)"],
+            "gaps": ["transformations (B2)"],
+            "evidence": 6
+          },
+          "vocabulary": {
+            "level": 3,
+            "estimated_cefr": "B1",
+            "confidence": "medium",
+            "coverage": 0.5,
+            "strengths": [
+              "collocations (B1)",
+              "phrasal-verbs (B1)",
+              "word-formation (B1)",
+              "near-synonyms (B1)"
+            ],
+            "gaps": ["collocations (B2)", "phrasal-verbs (B2)"],
+            "evidence": 6
+          },
+          "reading": {
+            "level": 3,
+            "estimated_cefr": "B1",
+            "confidence": "medium",
+            "coverage": 0.8,
+            "strengths": ["gist (B1)", "detail (B1)", "inference (B1)", "meaning-context (B1)"],
+            "gaps": ["gist (B2)", "detail (B2)"],
+            "evidence": 6
+          },
+          "writing": {
+            "level": null,
+            "estimated_cefr": null,
+            "confidence": "insufficient",
+            "coverage": 0,
+            "strengths": [],
+            "gaps": [],
+            "evidence": 0
+          },
+          "listening": {
+            "level": null,
+            "estimated_cefr": null,
+            "confidence": "insufficient",
+            "coverage": 0,
+            "strengths": [],
+            "gaps": [],
+            "evidence": 0
+          },
+          "speaking": {
+            "level": null,
+            "estimated_cefr": null,
+            "confidence": "insufficient",
+            "coverage": 0,
+            "strengths": [],
+            "gaps": [],
+            "evidence": 0
+          }
+        },
+        "acoustic_fluency": null,
+        "pronunciation": null
+      },
+      "next": {
+        "id": "en-v4-writing-3",
+        "strand": "writing",
+        "subskill": "productive-writing",
+        "level": 3,
+        "kind": "writing",
+        "prompt": "Your school wants to start an after-school club. Write an email proposing one club, explaining two benefits and suggesting how to organise the first meeting.",
+        "words": [80, 120]
+      }
+    },
+    {
+      "profile": "B2",
+      "state": {
+        "asked": [
+          "en-v4-grammar-3-0",
+          "en-v4-vocabulary-4-0",
+          "en-v4-reading-5-0",
+          "en-v4-production-3",
+          "en-v4-vocabulary-5-0",
+          "en-v4-reading-4-0",
+          "en-v4-production-5",
+          "en-v4-vocabulary-4-1",
+          "en-v4-reading-5-1",
+          "en-v4-production-4",
+          "en-v4-vocabulary-5-1",
+          "en-v4-reading-4-1",
+          "en-v4-grammar-4-2",
+          "en-v4-vocabulary-4-3",
+          "en-v4-reading-4-2",
+          "en-v4-grammar-4-0",
+          "en-v4-vocabulary-4-4",
+          "en-v4-reading-4-3"
+        ],
+        "observations": [
+          {
+            "id": "en-v4-grammar-3-0",
+            "strand": "grammar",
+            "subskill": "tense-contrast",
+            "level": 3,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-vocabulary-4-0",
+            "strand": "vocabulary",
+            "subskill": "collocations",
+            "level": 4,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-reading-5-0",
+            "strand": "reading",
+            "subskill": "gist",
+            "level": 5,
+            "kind": "choice",
+            "correct": false,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-production-3",
+            "strand": "grammar",
+            "subskill": "transformations",
+            "level": 4,
+            "kind": "short",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-vocabulary-5-0",
+            "strand": "vocabulary",
+            "subskill": "near-synonyms",
+            "level": 5,
+            "kind": "choice",
+            "correct": false,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-reading-4-0",
+            "strand": "reading",
+            "subskill": "gist",
+            "level": 4,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-production-5",
+            "strand": "grammar",
+            "subskill": "complex-structures",
+            "level": 5,
+            "kind": "short",
+            "correct": false,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-vocabulary-4-1",
+            "strand": "vocabulary",
+            "subskill": "phrasal-verbs",
+            "level": 4,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-reading-5-1",
+            "strand": "reading",
+            "subskill": "detail",
+            "level": 5,
+            "kind": "choice",
+            "correct": false,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-production-4",
+            "strand": "grammar",
+            "subskill": "transformations",
+            "level": 4,
+            "kind": "short",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-vocabulary-5-1",
+            "strand": "vocabulary",
+            "subskill": "register",
+            "level": 5,
+            "kind": "choice",
+            "correct": false,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-reading-4-1",
+            "strand": "reading",
+            "subskill": "detail",
+            "level": 4,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-grammar-4-2",
+            "strand": "grammar",
+            "subskill": "complex-structures",
+            "level": 4,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-vocabulary-4-3",
+            "strand": "vocabulary",
+            "subskill": "near-synonyms",
+            "level": 4,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-reading-4-2",
+            "strand": "reading",
+            "subskill": "inference",
+            "level": 4,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-grammar-4-0",
+            "strand": "grammar",
+            "subskill": "conditionals",
+            "level": 4,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-vocabulary-4-4",
+            "strand": "vocabulary",
+            "subskill": "register",
+            "level": 4,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          },
+          {
+            "id": "en-v4-reading-4-3",
+            "strand": "reading",
+            "subskill": "meaning-context",
+            "level": 4,
+            "kind": "choice",
+            "correct": true,
+            "weight": 1
+          }
+        ],
+        "band": 5,
+        "phase": "production",
+        "placementCount": 12,
+        "started": 0,
+        "placementLevel": 4
+      },
+      "trace": [
+        {
+          "id": "en-v4-grammar-3-0",
+          "level": 3,
+          "strand": "grammar",
+          "correct": true,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-vocabulary-4-0",
+          "level": 4,
+          "strand": "vocabulary",
+          "correct": true,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-reading-5-0",
+          "level": 5,
+          "strand": "reading",
+          "correct": false,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-production-3",
+          "level": 4,
+          "strand": "grammar",
+          "correct": true,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-vocabulary-5-0",
+          "level": 5,
+          "strand": "vocabulary",
+          "correct": false,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-reading-4-0",
+          "level": 4,
+          "strand": "reading",
+          "correct": true,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-production-5",
+          "level": 5,
+          "strand": "grammar",
+          "correct": false,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-vocabulary-4-1",
+          "level": 4,
+          "strand": "vocabulary",
+          "correct": true,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-reading-5-1",
+          "level": 5,
+          "strand": "reading",
+          "correct": false,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-production-4",
+          "level": 4,
+          "strand": "grammar",
+          "correct": true,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-vocabulary-5-1",
+          "level": 5,
+          "strand": "vocabulary",
+          "correct": false,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-reading-4-1",
+          "level": 4,
+          "strand": "reading",
+          "correct": true,
+          "phase": "placement"
+        },
+        {
+          "id": "en-v4-grammar-4-2",
+          "level": 4,
+          "strand": "grammar",
+          "correct": true,
+          "phase": "gaps"
+        },
+        {
+          "id": "en-v4-vocabulary-4-3",
+          "level": 4,
+          "strand": "vocabulary",
+          "correct": true,
+          "phase": "gaps"
+        },
+        {
+          "id": "en-v4-reading-4-2",
+          "level": 4,
+          "strand": "reading",
+          "correct": true,
+          "phase": "gaps"
+        },
+        {
+          "id": "en-v4-grammar-4-0",
+          "level": 4,
+          "strand": "grammar",
+          "correct": true,
+          "phase": "gaps"
+        },
+        {
+          "id": "en-v4-vocabulary-4-4",
+          "level": 4,
+          "strand": "vocabulary",
+          "correct": true,
+          "phase": "gaps"
+        },
+        {
+          "id": "en-v4-reading-4-3",
+          "level": 4,
+          "strand": "reading",
+          "correct": true,
+          "phase": "gaps"
+        }
+      ],
+      "map": {
+        "estimated_cefr": null,
+        "placement_cefr": "B2",
+        "scope": "receptive-placement-only",
+        "confidence": "medium",
+        "coverage": 27,
+        "strands": {
+          "grammar": {
+            "level": 4,
+            "estimated_cefr": "B2",
+            "confidence": "medium",
+            "coverage": 0.3333333333333333,
+            "strengths": [
+              "tense-contrast (B1)",
+              "transformations (B2)",
+              "complex-structures (B2)",
+              "conditionals (B2)"
+            ],
+            "gaps": ["complex-structures (C1)"],
+            "evidence": 6
+          },
+          "vocabulary": {
+            "level": 4,
+            "estimated_cefr": "B2",
+            "confidence": "medium",
+            "coverage": 0.5,
+            "strengths": [
+              "collocations (B2)",
+              "phrasal-verbs (B2)",
+              "near-synonyms (B2)",
+              "register (B2)"
+            ],
+            "gaps": ["near-synonyms (C1)", "register (C1)"],
+            "evidence": 6
+          },
+          "reading": {
+            "level": 4,
+            "estimated_cefr": "B2",
+            "confidence": "medium",
+            "coverage": 0.8,
+            "strengths": ["gist (B2)", "detail (B2)", "inference (B2)", "meaning-context (B2)"],
+            "gaps": ["gist (C1)", "detail (C1)"],
+            "evidence": 6
+          },
+          "writing": {
+            "level": null,
+            "estimated_cefr": null,
+            "confidence": "insufficient",
+            "coverage": 0,
+            "strengths": [],
+            "gaps": [],
+            "evidence": 0
+          },
+          "listening": {
+            "level": null,
+            "estimated_cefr": null,
+            "confidence": "insufficient",
+            "coverage": 0,
+            "strengths": [],
+            "gaps": [],
+            "evidence": 0
+          },
+          "speaking": {
+            "level": null,
+            "estimated_cefr": null,
+            "confidence": "insufficient",
+            "coverage": 0,
+            "strengths": [],
+            "gaps": [],
+            "evidence": 0
+          }
+        },
+        "acoustic_fluency": null,
+        "pronunciation": null
+      },
+      "next": {
+        "id": "en-v4-writing-4",
+        "strand": "writing",
+        "subskill": "productive-writing",
+        "level": 4,
+        "kind": "writing",
+        "prompt": "Your town is considering replacing a car park with a public garden. Write a balanced article discussing benefits and drawbacks, and justify your recommendation.",
+        "words": [150, 180]
+      }
+    }
+  ],
+  "physics": [
+    {
+      "profile": "weak",
+      "trace": [
+        {
+          "id": "physics-v4-connected-bodies-3",
+          "skill": "connected-bodies",
+          "level": 3,
+          "grade": 10,
+          "route": "grade-anchor",
+          "correct": false
+        },
+        {
+          "id": "physics-v4-newton-2",
+          "skill": "newton",
+          "level": 2,
+          "grade": 9,
+          "route": "prerequisite-after-error",
+          "correct": false
+        },
+        {
+          "id": "physics-v4-acceleration-1",
+          "skill": "acceleration",
+          "level": 1,
+          "grade": 9,
+          "route": "prerequisite-after-error",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-acceleration-2",
+          "skill": "acceleration",
+          "level": 2,
+          "grade": 9,
+          "route": "increase-demand",
+          "correct": false
+        },
+        {
+          "id": "physics-v4-vectors-1",
+          "skill": "vectors",
+          "level": 1,
+          "grade": 7,
+          "route": "prerequisite-after-error",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-vectors-2",
+          "skill": "vectors",
+          "level": 2,
+          "grade": 7,
+          "route": "increase-demand",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-mixed-circuits-3",
+          "skill": "mixed-circuits",
+          "level": 3,
+          "grade": 10,
+          "route": "branch-at-current-demand",
+          "correct": false
+        },
+        {
+          "id": "physics-v4-series-2",
+          "skill": "series",
+          "level": 2,
+          "grade": 8,
+          "route": "prerequisite-after-error",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-series-3",
+          "skill": "series",
+          "level": 3,
+          "grade": 8,
+          "route": "increase-demand",
+          "correct": false
+        },
+        {
+          "id": "physics-v4-ohm-2",
+          "skill": "ohm",
+          "level": 2,
+          "grade": 8,
+          "route": "prerequisite-after-error",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-ohm-3",
+          "skill": "ohm",
+          "level": 3,
+          "grade": 8,
+          "route": "increase-demand",
+          "correct": false
+        },
+        {
+          "id": "physics-v4-resistance-2",
+          "skill": "resistance",
+          "level": 2,
+          "grade": 8,
+          "route": "prerequisite-after-error",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-resistance-3",
+          "skill": "resistance",
+          "level": 3,
+          "grade": 8,
+          "route": "increase-demand",
+          "correct": false
+        },
+        {
+          "id": "physics-v4-voltage-2",
+          "skill": "voltage",
+          "level": 2,
+          "grade": 8,
+          "route": "prerequisite-after-error",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-voltage-3",
+          "skill": "voltage",
+          "level": 3,
+          "grade": 8,
+          "route": "increase-demand",
+          "correct": false
+        },
+        {
+          "id": "physics-v4-energy-2",
+          "skill": "energy",
+          "level": 2,
+          "grade": 7,
+          "route": "prerequisite-after-error",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-energy-3",
+          "skill": "energy",
+          "level": 3,
+          "grade": 7,
+          "route": "increase-demand",
+          "correct": false
+        },
+        {
+          "id": "physics-v4-mass-2",
+          "skill": "mass",
+          "level": 2,
+          "grade": 7,
+          "route": "prerequisite-after-error",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-mass-3",
+          "skill": "mass",
+          "level": 3,
+          "grade": 7,
+          "route": "increase-demand",
+          "correct": false
+        },
+        {
+          "id": "physics-v4-units-2",
+          "skill": "units",
+          "level": 2,
+          "grade": 7,
+          "route": "prerequisite-after-error",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-units-3",
+          "skill": "units",
+          "level": 3,
+          "grade": 7,
+          "route": "increase-demand",
+          "correct": false
+        },
+        {
+          "id": "physics-v4-momentum-2",
+          "skill": "momentum",
+          "level": 2,
+          "grade": 10,
+          "route": "branch-at-current-demand",
+          "correct": false
+        },
+        {
+          "id": "physics-v4-newton-1",
+          "skill": "newton",
+          "level": 1,
+          "grade": 9,
+          "route": "prerequisite-after-error",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-experiment-2",
+          "skill": "experiment",
+          "level": 2,
+          "grade": 10,
+          "route": "branch-at-current-demand",
+          "correct": false
+        }
+      ],
+      "state": {
+        "algorithm": "physics-v4",
+        "grade": 10,
+        "targetGrade": 10,
+        "startLevel": 3,
+        "band": 2,
+        "curriculumFloor": 1,
+        "asked": [
+          "physics-v4-connected-bodies-3",
+          "physics-v4-newton-2",
+          "physics-v4-acceleration-1",
+          "physics-v4-acceleration-2",
+          "physics-v4-vectors-1",
+          "physics-v4-vectors-2",
+          "physics-v4-mixed-circuits-3",
+          "physics-v4-series-2",
+          "physics-v4-series-3",
+          "physics-v4-ohm-2",
+          "physics-v4-ohm-3",
+          "physics-v4-resistance-2",
+          "physics-v4-resistance-3",
+          "physics-v4-voltage-2",
+          "physics-v4-voltage-3",
+          "physics-v4-energy-2",
+          "physics-v4-energy-3",
+          "physics-v4-mass-2",
+          "physics-v4-mass-3",
+          "physics-v4-units-2",
+          "physics-v4-units-3",
+          "physics-v4-momentum-2",
+          "physics-v4-newton-1",
+          "physics-v4-experiment-2"
+        ],
+        "routeReason": "branch-at-current-demand",
+        "skill": "experiment",
+        "difficulty": 2
+      }
+    },
+    {
+      "profile": "average",
+      "trace": [
+        {
+          "id": "physics-v4-connected-bodies-3",
+          "skill": "connected-bodies",
+          "level": 3,
+          "grade": 10,
+          "route": "grade-anchor",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-connected-bodies-4",
+          "skill": "connected-bodies",
+          "level": 4,
+          "grade": 10,
+          "route": "increase-demand",
+          "correct": false
+        },
+        {
+          "id": "physics-v4-newton-3",
+          "skill": "newton",
+          "level": 3,
+          "grade": 9,
+          "route": "prerequisite-after-error",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-newton-4",
+          "skill": "newton",
+          "level": 4,
+          "grade": 9,
+          "route": "increase-demand",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-mixed-circuits-5",
+          "skill": "mixed-circuits",
+          "level": 5,
+          "grade": 10,
+          "route": "branch-at-current-demand",
+          "correct": false
+        },
+        {
+          "id": "physics-v4-series-4",
+          "skill": "series",
+          "level": 4,
+          "grade": 8,
+          "route": "prerequisite-after-error",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-series-5",
+          "skill": "series",
+          "level": 5,
+          "grade": 8,
+          "route": "increase-demand",
+          "correct": false
+        },
+        {
+          "id": "physics-v4-ohm-4",
+          "skill": "ohm",
+          "level": 4,
+          "grade": 8,
+          "route": "prerequisite-after-error",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-ohm-5",
+          "skill": "ohm",
+          "level": 5,
+          "grade": 8,
+          "route": "increase-demand",
+          "correct": false
+        },
+        {
+          "id": "physics-v4-resistance-4",
+          "skill": "resistance",
+          "level": 4,
+          "grade": 8,
+          "route": "prerequisite-after-error",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-resistance-5",
+          "skill": "resistance",
+          "level": 5,
+          "grade": 8,
+          "route": "increase-demand",
+          "correct": false
+        },
+        {
+          "id": "physics-v4-voltage-4",
+          "skill": "voltage",
+          "level": 4,
+          "grade": 8,
+          "route": "prerequisite-after-error",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-voltage-5",
+          "skill": "voltage",
+          "level": 5,
+          "grade": 8,
+          "route": "increase-demand",
+          "correct": false
+        },
+        {
+          "id": "physics-v4-energy-4",
+          "skill": "energy",
+          "level": 4,
+          "grade": 7,
+          "route": "prerequisite-after-error",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-energy-5",
+          "skill": "energy",
+          "level": 5,
+          "grade": 7,
+          "route": "increase-demand",
+          "correct": false
+        },
+        {
+          "id": "physics-v4-mass-4",
+          "skill": "mass",
+          "level": 4,
+          "grade": 7,
+          "route": "prerequisite-after-error",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-mass-5",
+          "skill": "mass",
+          "level": 5,
+          "grade": 7,
+          "route": "increase-demand",
+          "correct": false
+        },
+        {
+          "id": "physics-v4-units-4",
+          "skill": "units",
+          "level": 4,
+          "grade": 7,
+          "route": "prerequisite-after-error",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-units-5",
+          "skill": "units",
+          "level": 5,
+          "grade": 7,
+          "route": "increase-demand",
+          "correct": false
+        },
+        {
+          "id": "physics-v4-acceleration-4",
+          "skill": "acceleration",
+          "level": 4,
+          "grade": 9,
+          "route": "branch-at-current-demand",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-acceleration-5",
+          "skill": "acceleration",
+          "level": 5,
+          "grade": 9,
+          "route": "increase-demand",
+          "correct": false
+        },
+        {
+          "id": "physics-v4-vectors-4",
+          "skill": "vectors",
+          "level": 4,
+          "grade": 7,
+          "route": "prerequisite-after-error",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-vectors-5",
+          "skill": "vectors",
+          "level": 5,
+          "grade": 7,
+          "route": "increase-demand",
+          "correct": false
+        },
+        {
+          "id": "physics-v4-momentum-4",
+          "skill": "momentum",
+          "level": 4,
+          "grade": 10,
+          "route": "branch-at-current-demand",
+          "correct": false
+        }
+      ],
+      "state": {
+        "algorithm": "physics-v4",
+        "grade": 10,
+        "targetGrade": 10,
+        "startLevel": 3,
+        "band": 4,
+        "curriculumFloor": 1,
+        "asked": [
+          "physics-v4-connected-bodies-3",
+          "physics-v4-connected-bodies-4",
+          "physics-v4-newton-3",
+          "physics-v4-newton-4",
+          "physics-v4-mixed-circuits-5",
+          "physics-v4-series-4",
+          "physics-v4-series-5",
+          "physics-v4-ohm-4",
+          "physics-v4-ohm-5",
+          "physics-v4-resistance-4",
+          "physics-v4-resistance-5",
+          "physics-v4-voltage-4",
+          "physics-v4-voltage-5",
+          "physics-v4-energy-4",
+          "physics-v4-energy-5",
+          "physics-v4-mass-4",
+          "physics-v4-mass-5",
+          "physics-v4-units-4",
+          "physics-v4-units-5",
+          "physics-v4-acceleration-4",
+          "physics-v4-acceleration-5",
+          "physics-v4-vectors-4",
+          "physics-v4-vectors-5",
+          "physics-v4-momentum-4"
+        ],
+        "routeReason": "branch-at-current-demand",
+        "skill": "momentum",
+        "difficulty": 4
+      }
+    },
+    {
+      "profile": "strong",
+      "trace": [
+        {
+          "id": "physics-v4-connected-bodies-3",
+          "skill": "connected-bodies",
+          "level": 3,
+          "grade": 10,
+          "route": "grade-anchor",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-connected-bodies-4",
+          "skill": "connected-bodies",
+          "level": 4,
+          "grade": 10,
+          "route": "increase-demand",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-mixed-circuits-5",
+          "skill": "mixed-circuits",
+          "level": 5,
+          "grade": 10,
+          "route": "branch-at-current-demand",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-experiment-5",
+          "skill": "experiment",
+          "level": 5,
+          "grade": 10,
+          "route": "branch-at-current-demand",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-acceleration-5",
+          "skill": "acceleration",
+          "level": 5,
+          "grade": 9,
+          "route": "branch-at-current-demand",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-conservation-energy-5",
+          "skill": "conservation-energy",
+          "level": 5,
+          "grade": 9,
+          "route": "branch-at-current-demand",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-vectors-5",
+          "skill": "vectors",
+          "level": 5,
+          "grade": 7,
+          "route": "branch-at-current-demand",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-momentum-5",
+          "skill": "momentum",
+          "level": 5,
+          "grade": 10,
+          "route": "branch-at-current-demand",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-motion-graphs-5",
+          "skill": "motion-graphs",
+          "level": 5,
+          "grade": 9,
+          "route": "branch-at-current-demand",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-accelerated-5",
+          "skill": "accelerated",
+          "level": 5,
+          "grade": 9,
+          "route": "branch-at-current-demand",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-free-fall-5",
+          "skill": "free-fall",
+          "level": 5,
+          "grade": 9,
+          "route": "branch-at-current-demand",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-newton-5",
+          "skill": "newton",
+          "level": 5,
+          "grade": 9,
+          "route": "branch-at-current-demand",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-net-force-5",
+          "skill": "net-force",
+          "level": 5,
+          "grade": 9,
+          "route": "branch-at-current-demand",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-friction-5",
+          "skill": "friction",
+          "level": 5,
+          "grade": 9,
+          "route": "branch-at-current-demand",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-efficiency-5",
+          "skill": "efficiency",
+          "level": 5,
+          "grade": 8,
+          "route": "branch-at-current-demand",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-voltage-5",
+          "skill": "voltage",
+          "level": 5,
+          "grade": 8,
+          "route": "branch-at-current-demand",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-current-5",
+          "skill": "current",
+          "level": 5,
+          "grade": 8,
+          "route": "branch-at-current-demand",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-resistance-5",
+          "skill": "resistance",
+          "level": 5,
+          "grade": 8,
+          "route": "branch-at-current-demand",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-ohm-5",
+          "skill": "ohm",
+          "level": 5,
+          "grade": 8,
+          "route": "branch-at-current-demand",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-series-5",
+          "skill": "series",
+          "level": 5,
+          "grade": 8,
+          "route": "branch-at-current-demand",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-parallel-5",
+          "skill": "parallel",
+          "level": 5,
+          "grade": 8,
+          "route": "branch-at-current-demand",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-electric-power-5",
+          "skill": "electric-power",
+          "level": 5,
+          "grade": 8,
+          "route": "branch-at-current-demand",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-units-5",
+          "skill": "units",
+          "level": 5,
+          "grade": 7,
+          "route": "branch-at-current-demand",
+          "correct": true
+        },
+        {
+          "id": "physics-v4-distance-5",
+          "skill": "distance",
+          "level": 5,
+          "grade": 7,
+          "route": "branch-at-current-demand",
+          "correct": true
+        }
+      ],
+      "state": {
+        "algorithm": "physics-v4",
+        "grade": 10,
+        "targetGrade": 10,
+        "startLevel": 3,
+        "band": 5,
+        "curriculumFloor": 1,
+        "asked": [
+          "physics-v4-connected-bodies-3",
+          "physics-v4-connected-bodies-4",
+          "physics-v4-mixed-circuits-5",
+          "physics-v4-experiment-5",
+          "physics-v4-acceleration-5",
+          "physics-v4-conservation-energy-5",
+          "physics-v4-vectors-5",
+          "physics-v4-momentum-5",
+          "physics-v4-motion-graphs-5",
+          "physics-v4-accelerated-5",
+          "physics-v4-free-fall-5",
+          "physics-v4-newton-5",
+          "physics-v4-net-force-5",
+          "physics-v4-friction-5",
+          "physics-v4-efficiency-5",
+          "physics-v4-voltage-5",
+          "physics-v4-current-5",
+          "physics-v4-resistance-5",
+          "physics-v4-ohm-5",
+          "physics-v4-series-5",
+          "physics-v4-parallel-5",
+          "physics-v4-electric-power-5",
+          "physics-v4-units-5",
+          "physics-v4-distance-5"
+        ],
+        "routeReason": "branch-at-current-demand",
+        "skill": "distance",
+        "difficulty": 5
+      }
+    }
+  ]
+}

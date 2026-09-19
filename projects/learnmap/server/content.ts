@@ -1,6 +1,8 @@
 import { englishUnits, englishQuestion } from './english-content';
 import { conceptChecks } from './concept-content';
 import { mathDefinitions, mathQuestion } from './math-content';
+import { physicsDefinitions } from './physics-curriculum';
+import { physicsQuestion } from './physics-content';
 export type LocalText = { en: string; uk: string };
 export const bi = (en: string, uk: string): LocalText => ({ en, uk });
 type SeedSkill = {
@@ -244,7 +246,32 @@ seedSkills.push(
     strand: u.strand,
   })),
 );
+for (const [id, title, , branch, pre] of physicsDefinitions) {
+  const rule =
+    'Обери фізичну модель, визнач систему й напрямки, перевір одиниці та правдоподібність висновку.';
+  const existing = seedSkills.find((skill) => skill.id === id);
+  if (existing) {
+    existing.pre = pre;
+    existing.title = bi(title, title);
+    existing.explanation = bi(rule, rule);
+  } else
+    seedSkills.push(
+      s(
+        id,
+        'physics',
+        branch === 'electricity' ? 'electricity' : 'mechanics',
+        title,
+        title,
+        pre,
+        0,
+        rule,
+        rule,
+      ),
+    );
+}
 export function sampleQuestion(id: string, n: number) {
+  const physics = physicsQuestion(id, (n % 5) + 1);
+  if (physics) return physics;
   const math = mathQuestion(id, n);
   if (math) return math;
   const english = englishQuestion(id, n);

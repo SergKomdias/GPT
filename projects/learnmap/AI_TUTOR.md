@@ -1,5 +1,7 @@
 # AI tutor and learning evidence
 
+For the new Physics and CEFR English diagnostic, see [evidence rules and examples](docs/DIAGNOSTICS.uk.md). English productive assessment uses strict Structured Outputs and server-side Zod validation, stores the original text and seven language dimensions, and never emits acoustic fluency or pronunciation scores. The new adapter passed an explicit live synthetic smoke on 2026-09-18 (`pnpm diagnostic:smoke`). Writing/Speaking/Listening recognition exercises now count as practice only, with no proficiency gain. The legacy mastery formulas below apply to objective learning evidence, not CEFR aggregation.
+
 AIService supports authored/mock and optional OpenAI adapters. Models are configured server-side; keys never belong in VITE variables. Responses, transcription and TTS integrations passed real synthetic smoke on 2026-09-18; see docs/LIVE-OPENAI.md. Objective question grading is deterministic.
 
 Positive score increments are at most 4 per independent correct answer, weighted down by hints, capped at +8 per skill/session and +12 per skill/local day. An incorrect answer subtracts 4, bounded at zero. First assessment uses a neutral 50 prior, not a claim of previously demonstrated knowledge. Zero-confidence scores are hidden. Three or more hints give no positive knowledge increment.

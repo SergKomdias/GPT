@@ -8,6 +8,8 @@
 
 **Mathematics Diagnostic:** 25 навичок, 200 авторських запитань, п’ять когнітивних рівнів; старт за класом, підвищення складності та перевірка передумов після помилок. [Алгоритм, fixtures і міграція](docs/MATHEMATICS-DIAGNOSTIC.uk.md). Нові матеріали потребують учительського затвердження перед пілотом.
 
+**Physics та English Diagnostic:** фізика — 30 навичок / 150 завдань L1–L5, старт L3 за country/grade, графіки й змішані кола. English — 116 завдань A1–C1, 12 кроків placement + 6 уточнень, окремі письмо, реальне аудіювання та 3 голосові відповіді. [Чотири приклади English, карти, фізичні профілі, правила доказів і live-перевірка](docs/DIAGNOSTICS.uk.md). Складність визначає мислення, не розмір чисел.
+
 ## Pilot status
 
 The 0.3 implementation adds parental consent/withdrawal, a separate Speaking permission, account export/deletion, transcript retention, internal aggregate metrics, optional feedback and content approval gates. **Hosting is deferred by the owner. Live OpenAI synthetic smoke passed on 2026-09-18; see docs/LIVE-OPENAI.md.** Local and mocked-network tests do not establish live-provider readiness.
@@ -78,7 +80,7 @@ projects/learnmap/
 
 - Student/Parent/Admin accounts, persistent server sessions, parent invitations and role authorization.
 - Onboarding selects one or more subjects, an IANA timezone and a daily learning goal. Subjects can be added, paused and resumed without deleting history or mastery.
-- Mathematics: 15 sample skills; Physics: 18; English B1: 6 strands and 26 subskills. There are 65 stored nodes and 585 questions (59 assessed leaf skills). Math/Physics include conceptual and error/transfer checks alongside calculations. English includes contextual choice, sentence completion and rule checks.
+- Mathematics: 25 skills / 200 diagnostic questions; Physics: 30 / 150; English: 6 strands and the existing B1 practice subskills, plus 116 CEFR A1–C1 assessment items. Legacy questions remain in historical records. Productive and audio ability require separate evidence; recognition never establishes Writing/Speaking proficiency.
 - Mastery estimate, confidence and retention are separate. Positive growth is capped at 8 points per session and 12 per local day. Mastered/Strong require independent evidence and delayed successful checks, not just a high score.
 - Subject summaries show assessed/total skills, coverage and confidence. A subject percentage is withheld below 60% coverage or 35% mean assessed-skill confidence.
 - Diagnostics sample different graph branches and adapt difficulty. They finish at sufficient coverage/confidence or a 24-question safety limit; reaching the limit reports remaining uncertainty.
