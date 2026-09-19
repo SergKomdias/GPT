@@ -6,6 +6,7 @@ import { Heading, Loading, Notice } from '../components/UI';
 import { Question } from '../features/learning/Question';
 import { EnglishAssessmentMap } from '../components/EnglishAssessmentMap';
 import { ProductionFeedback } from '../components/ProductionFeedback';
+import { SelectionTranslation } from '../components/SelectionTranslation';
 export function EnglishDiagnostic() {
   const [session, setSession] = useState<any>(null),
     [error, setError] = useState(''),
@@ -104,7 +105,8 @@ export function EnglishDiagnostic() {
       setAudioUrl(urlRef.current);
     });
   return (
-    <div className="narrow">
+    <SelectionTranslation>
+      <div className="narrow">
       <Heading
         title="English Diagnostic"
         description="Спочатку визначимо приблизний CEFR, потім перевіримо прогалини та окремі мовні вміння."
@@ -279,6 +281,7 @@ export function EnglishDiagnostic() {
           <ProductionFeedback assessment={session.assessment} />
         </section>
       ) : null}
-    </div>
+      </div>
+    </SelectionTranslation>
   );
 }
