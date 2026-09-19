@@ -7,13 +7,15 @@ export function Question({
   value,
   onChange,
   disabled = false,
+  allowUnknown = false,
 }: {
   question: any;
   value: number | null;
   onChange: (n: number) => void;
   disabled?: boolean;
+  allowUnknown?: boolean;
 }) {
-  const { lang } = useApp();
+  const { lang, t } = useApp();
   const order = useMemo(() => {
     const indices = question.options.map((_: string, i: number) => i);
     for (let i = indices.length - 1; i > 0; i--) {
@@ -41,6 +43,19 @@ export function Question({
             <span>{question.options[i]}</span>
           </label>
         ))}
+        {allowUnknown ? (
+          <label className={'unknown-answer ' + (value === -1 ? 'selected' : '')}>
+            <input
+              type="radio"
+              name="answer"
+              checked={value === -1}
+              onChange={() => onChange(-1)}
+              disabled={disabled}
+            />
+            <span className="answer-letter">?</span>
+            <span>{t("I don't know", 'Не знаю')}</span>
+          </label>
+        ) : null}
       </div>
     </fieldset>
   );
