@@ -180,7 +180,7 @@ export function EnglishDiagnostic() {
   }
 
   return (
-    <SelectionTranslation>
+    <SelectionTranslation sessionId={session?.id} taskId={task?.id}>
       <div className="narrow">
       <Heading
         title="English Diagnostic"
