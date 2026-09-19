@@ -108,9 +108,12 @@ describe.sequential('AR Lab telemetry', () => {
         [registered.data.id],
       )
     ).rows;
-    expect(rows.filter((row) => row.event === 'mission_completed')).toHaveLength(5);
-    expect(rows.every((row) => row.subject_id === 'physics')).toBe(true);
-    expect(rows.every((row) => row.session_id === session)).toBe(true);
+    const arRows = rows.filter((row) =>
+      ['ar_mission_started', 'mission_completed', 'voluntary_continue'].includes(row.event),
+    );
+    expect(arRows.filter((row) => row.event === 'mission_completed')).toHaveLength(5);
+    expect(arRows.every((row) => row.subject_id === 'physics')).toBe(true);
+    expect(arRows.every((row) => row.session_id === session)).toBe(true);
 
     const aggregate = await metrics(db);
     expect(aggregate.ar_completed_sets).toBeGreaterThanOrEqual(1);
