@@ -211,7 +211,7 @@ export async function exportData(db: DB, id: string) {
   ).rows;
   data.family_messages = (
     await db.query(
-      'SELECT student_id,sender_id,body,created_at FROM family_messages WHERE student_id=$1 OR sender_id=$1 ORDER BY created_at',
+      'SELECT student_id,sender_id,body,created_at FROM family_messages WHERE sender_id=$1 OR student_id=$1 OR student_id IN (SELECT student_id FROM parent_student_links WHERE parent_id=$1) ORDER BY created_at',
       [id],
     )
   ).rows;
