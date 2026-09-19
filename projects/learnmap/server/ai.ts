@@ -200,6 +200,32 @@ export class AIService {
     ];
     return Promise.resolve(followups[count % followups.length]);
   }
+  async translateEnglishWord(word: string) {
+    const clean = z.string().trim().regex(/^[A-Za-z][A-Za-z'-]{0,39}$/).parse(word);
+    if (this.provider === 'mock') {
+      const dictionary: Record<string, string> = {
+        although: 'хоча',
+        however: 'однак',
+        despite: 'попри',
+        unless: 'якщо не',
+        improve: 'покращувати',
+        likely: 'ймовірно',
+        purpose: 'мета',
+        evidence: 'доказ',
+        environment: 'довкілля',
+        opportunity: 'можливість',
+        achieve: 'досягати',
+        challenge: 'виклик',
+      };
+      return dictionary[clean.toLowerCase()] || 'Переклад доступний у live AI';
+    }
+    const translated = await this.text(
+      'Translate this one English word into Ukrainian for a school learner. Return only a short Ukrainian translation, no explanation: ' +
+        JSON.stringify(clean),
+    );
+    return translated.trim().slice(0, 120);
+  }
+
   async synthesizeSpeech(text: string) {
     if (this.provider === 'mock') return null;
     const r = await this.request('audio/speech', {
