@@ -18,7 +18,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [lang, setLanguage] = useState<Language>(() =>
     localStorage.getItem('learnmap-language') === 'en' ? 'en' : 'uk',
   );
-  const [config, setConfig] = useState({ ai: 'mock', demo: false });
+  const [config, setConfig] = useState({ ai: 'mock', demo: false, build: 'loading' });
   useEffect(() => {
     document.documentElement.lang = lang;
     document.title =
