@@ -7,6 +7,7 @@ import { Question } from '../features/learning/Question';
 import { EnglishAssessmentMap } from '../components/EnglishAssessmentMap';
 import { ProductionFeedback } from '../components/ProductionFeedback';
 import { SelectionTranslation } from '../components/SelectionTranslation';
+import { MicroBreak, isMicroBreakMoment } from '../components/MicroBreak';
 export function EnglishDiagnostic() {
   const [session, setSession] = useState<any>(null),
     [error, setError] = useState(''),
@@ -19,6 +20,9 @@ export function EnglishDiagnostic() {
   const sessionRef = useRef<any>(null),
     urlRef = useRef('');
   const [results, setResults] = useState<any[]>([]);
+  const [history, setHistory] = useState<any[]>([]);
+  const [reviewIndex, setReviewIndex] = useState<number | null>(null);
+  const [breakAt, setBreakAt] = useState<number | null>(null);
   const accept = (data: any) => {
     sessionRef.current = data;
     setSession(data);
@@ -79,19 +83,31 @@ export function EnglishDiagnostic() {
       });
       const result = await r.json();
       if (!r.ok) throw Error(result.error);
+      setHistory((rows) => [
+        ...rows,
+        { task: s.task, choice: null, text: '[голосова відповідь]', kind: 'speaking' },
+      ]);
       accept(result);
+      if (!result.completed && isMicroBreakMoment(result.count)) setBreakAt(result.count);
     }),
   );
   const task = session?.task;
   const answer = () =>
-    execute(async () =>
-      accept(
-        await api(`/english-diagnostic/${session.id}/answer`, 'POST', {
-          taskId: task.id,
-          answer: task.kind === 'choice' || task.kind === 'listening' ? choice : text,
-        }),
-      ),
-    );
+    execute(async () => {
+      const previous = {
+        task,
+        choice,
+        text,
+        kind: task.kind,
+      };
+      const result = await api(`/english-diagnostic/${session.id}/answer`, 'POST', {
+        taskId: task.id,
+        answer: task.kind === 'choice' || task.kind === 'listening' ? choice : text,
+      });
+      setHistory((rows) => [...rows, previous]);
+      accept(result);
+      if (!result.completed && isMicroBreakMoment(result.count)) setBreakAt(result.count);
+    });
   const listen = () =>
     execute(async () => {
       const r = await fetch(`/api/english-diagnostic/${session.id}/listen`, {
@@ -104,6 +120,65 @@ export function EnglishDiagnostic() {
       urlRef.current = URL.createObjectURL(await r.blob());
       setAudioUrl(urlRef.current);
     });
+
+  if (reviewIndex !== null && history[reviewIndex]) {
+    const row = history[reviewIndex];
+    return (
+      <SelectionTranslation>
+        <div className="narrow">
+          <Heading
+            title="Попереднє завдання"
+            description="Лише перегляд: відповідь уже використана адаптивною діагностикою."
+          />
+          <section className="panel practice-panel diagnostic-review">
+            {row.task.passage ? <article className="reading-passage">{row.task.passage}</article> : null}
+            {row.task.options ? (
+              <Question
+                question={{ ...row.task, prompt: { uk: row.task.prompt, en: row.task.prompt } }}
+                value={row.choice}
+                onChange={() => {}}
+                disabled
+                allowUnknown
+              />
+            ) : (
+              <>
+                <h2>{row.task.prompt}</h2>
+                <blockquote>{row.text || 'Відповідь не збережена для перегляду'}</blockquote>
+              </>
+            )}
+            <div className="practice-footer diagnostic-history-nav">
+              <button
+                className="button secondary"
+                disabled={reviewIndex === 0}
+                onClick={() => setReviewIndex((i) => Math.max(0, (i || 0) - 1))}
+              >
+                ← Раніше
+              </button>
+              <button
+                className="button"
+                onClick={() =>
+                  reviewIndex < history.length - 1
+                    ? setReviewIndex(reviewIndex + 1)
+                    : setReviewIndex(null)
+                }
+              >
+                {reviewIndex < history.length - 1 ? 'Наступне переглянуте' : 'До поточного'} →
+              </button>
+            </div>
+          </section>
+        </div>
+      </SelectionTranslation>
+    );
+  }
+
+  if (breakAt !== null) {
+    return (
+      <div className="narrow">
+        <MicroBreak count={breakAt} onDone={() => setBreakAt(null)} />
+      </div>
+    );
+  }
+
   return (
     <SelectionTranslation>
       <div className="narrow">
@@ -248,6 +323,15 @@ export function EnglishDiagnostic() {
               )}
             </>
           )}
+          {history.length ? (
+            <button
+              className="button secondary"
+              disabled={busy || recorder.recording}
+              onClick={() => setReviewIndex(history.length - 1)}
+            >
+              ← Назад
+            </button>
+          ) : null}
           {task.kind !== 'speaking' && (
             <button
               className="button"
@@ -266,13 +350,17 @@ export function EnglishDiagnostic() {
               className="text-link"
               disabled={busy || recorder.recording}
               onClick={() =>
-                void execute(async () =>
-                  accept(
-                    await api(`/english-diagnostic/${session.id}/skip`, 'POST', {
-                      taskId: task.id,
-                    }),
-                  ),
-                )
+                void execute(async () => {
+                  const result = await api(`/english-diagnostic/${session.id}/skip`, 'POST', {
+                    taskId: task.id,
+                  });
+                  setHistory((rows) => [
+                    ...rows,
+                    { task, choice, text: '[пропущено]', kind: task.kind },
+                  ]);
+                  accept(result);
+                  if (!result.completed && isMicroBreakMoment(result.count)) setBreakAt(result.count);
+                })
               }
             >
               Пропустити — залишити навичку неоціненою
