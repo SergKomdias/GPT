@@ -92,6 +92,14 @@ export function Shell({ children }: { children?: React.ReactNode }) {
         </div>
       </aside>
       <div className="workspace">
+        {config.build !== 'loading' && !config.build ? (
+          <div className="runtime-warning">
+            {t(
+              'Old LearnMap backend is connected. Stop old server windows and restart pnpm dev.',
+              'Підключено старий backend LearnMap. Закрийте старі вікна сервера й перезапустіть pnpm dev.',
+            )}
+          </div>
+        ) : null}
         <header className="topbar">
           <span>
             {t('Workspace', 'Мій простір')} <i>/</i>{' '}
