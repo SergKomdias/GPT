@@ -3,7 +3,15 @@ import { api } from '../services/api';
 
 type Bubble = { word: string; translation: string; x: number; y: number } | null;
 
-export function SelectionTranslation({ children }: { children: ReactNode }) {
+export function SelectionTranslation({
+  children,
+  sessionId,
+  taskId,
+}: {
+  children: ReactNode;
+  sessionId?: string;
+  taskId?: string;
+}) {
   const host = useRef<HTMLDivElement>(null);
   const [bubble, setBubble] = useState<Bubble>(null);
   const request = useRef(0);
@@ -26,7 +34,10 @@ export function SelectionTranslation({ children }: { children: ReactNode }) {
       const rect = range.getBoundingClientRect();
       const ticket = ++request.current;
       setBubble({ word, translation: '…', x: rect.left + rect.width / 2, y: rect.top - 8 });
-      void api<{ translation: string }>('/english-diagnostic/translate', 'POST', { word })
+      void api<{ translation: string }>('/english-diagnostic/translate', 'POST', {
+        word,
+        ...(sessionId && taskId ? { sessionId, taskId } : {}),
+      })
         .then((result) => {
           if (request.current === ticket)
             setBubble({
@@ -52,7 +63,7 @@ export function SelectionTranslation({ children }: { children: ReactNode }) {
       root.removeEventListener('mouseup', select);
       root.removeEventListener('touchend', select);
     };
-  }, []);
+  }, [sessionId, taskId]);
 
   return (
     <div ref={host} className="selection-translation-host" onPointerDown={() => setBubble(null)}>
@@ -65,6 +76,7 @@ export function SelectionTranslation({ children }: { children: ReactNode }) {
         >
           <strong>{bubble.word}</strong>
           <span>{bubble.translation}</span>
+          {sessionId && taskId ? <em>підказка · вага доказу 25%</em> : null}
         </div>
       ) : null}
     </div>
