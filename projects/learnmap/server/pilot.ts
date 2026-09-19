@@ -239,6 +239,26 @@ export async function metrics(db: DB) {
       rate: eligible.length ? returned / eligible.length : null,
     };
   };
+  const arMissionEvents = events.filter(
+    (e) => e.event === 'mission_completed' && e.session_id,
+  );
+  const arCompletedBySession = new Map<string, number>();
+  for (const event of arMissionEvents)
+    arCompletedBySession.set(
+      event.session_id,
+      (arCompletedBySession.get(event.session_id) || 0) + 1,
+    );
+  const arCompletedSessions = new Set(
+    [...arCompletedBySession.entries()].filter(([, count]) => count >= 5).map(([id]) => id),
+  );
+  const arContinuedSessions = new Set(
+    events
+      .filter((e) => e.event === 'voluntary_continue' && e.session_id)
+      .map((e) => e.session_id),
+  );
+  const arQualifiedContinues = [...arContinuedSessions].filter((id) =>
+    arCompletedSessions.has(id),
+  ).length;
   return {
     today,
     timezone: zone,
@@ -254,6 +274,15 @@ export async function metrics(db: DB) {
     speaking_sessions: count('speaking_started'),
     speaking_completed: count('speaking_completed'),
     parent_dashboard_views: count('parent_dashboard_viewed'),
+    ar_sessions: new Set(
+      events.filter((e) => e.event === 'ar_mission_started' && e.session_id).map((e) => e.session_id),
+    ).size,
+    ar_missions_completed: arMissionEvents.length,
+    ar_completed_sets: arCompletedSessions.size,
+    ar_voluntary_continue: arQualifiedContinues,
+    ar_continue_rate: arCompletedSessions.size
+      ? arQualifiedContinues / arCompletedSessions.size
+      : null,
     day1: returns(1),
     day7: returns(7),
     subjects: ['math', 'physics', 'english'].map((id) => ({
